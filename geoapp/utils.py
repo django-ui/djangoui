@@ -45,7 +45,7 @@ def read_csv(file):
     }
     return df, ret
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def demail(subject="hello", msg="hello", to="geo1@geospaces.org", dfrom="", **kwargs):
+def demail(subject="hello", msg="hello", to="geo1@myorg.org", dfrom="", **kwargs):
     r = [f.strip() for f in to.split(",")]
     try:
         ret = send_mail( subject=subject,

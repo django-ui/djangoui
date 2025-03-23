@@ -34,7 +34,7 @@ We look into:
 # Create a variable - you can change and cut and run the remaining commands
 [ ~ ]
     export MKSERVICE=k8-django
-    export IMAGE=sada001/geo:geo-rhel9.21-django
+    export IMAGE=daya001/geo:geo-rhel9.21-django
 
     #=> In case you started one already:
     eval $(minikube docker-env)
@@ -61,7 +61,7 @@ Figure: shows the kubernetis daashboard with no services
 REPOSITORY            TAG                   IMAGE ID       CREATED        SIZE
 geo-rhel9.21-base     latest                39dbe8a871c0   34 hours ago   1.52GB
 geo-rhel9.21-django   latest                7364e7e9a17f   14 hours ago   2.03GB
-sada001/geo           geo-rhel9.21-django   7364e7e9a17f   24 hours ago   2.03GB
+daya001/geo           geo-rhel9.21-django   7364e7e9a17f   24 hours ago   2.03GB
 
 ```
 
@@ -213,7 +213,7 @@ spec:
                 app: django
     spec:
         containers:
-            - image: sada001/geo:geo-rhel9.21-django
+            - image: daya001/geo:geo-rhel9.21-django
                 imagePullPolicy: Always
             name: geo
             envFrom:
@@ -246,7 +246,7 @@ spec:
 # STEP 2: Create a variable - you can change and cut and run the remaining commands
 [ ~ ]
     export MKSERVICE=k8-django
-    export IMAGE=sada001/geo:geo-rhel9.21-django
+    export IMAGE=daya001/geo:geo-rhel9.21-django
 
     #=> In case you started one already:
     eval $(minikube docker-env)

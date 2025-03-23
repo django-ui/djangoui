@@ -17,7 +17,7 @@ spec:
         app: k8-django
     spec:
       containers:
-        - image: sada001/geo:geo-rhel9.21-django
+        - image: user001/geo:geo-rhel9.21-django
           imagePullPolicy: Always
           name: geo
           envFrom:

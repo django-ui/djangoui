@@ -24,7 +24,7 @@ You can clone or fork the main repo and start building your app in few minutes.
 
 Run the following commands
 ```
-    git clone https://github.com/sada-narayanappa/LearnDjango.git
+    git clone https://github.com/django-ui/djangoui.git
     cd LearnDjango
     pip install -r requirements.txt
     make run
@@ -53,7 +53,7 @@ https://youtube.com/playlist?list=PLEpvS3HCVQ58at6W2qxGoH8rWBTfNrq99
 Get it all working even faster if you are using docker. 
 
 ```
-    [ ] export IMAGE=sada001/geo:geo-rhel9.21-django
+    [ ] export IMAGE=<user>/geo:geo-rhel9.21-django
     [ ] docker pull ${IMAGE}
 
     # create a network to use in docker compose
@@ -110,12 +110,12 @@ to customize your image
 
 ----------------------------------------------------------------------------------------
 
-you can view https://github.com/geospaces-org/docs/blob/main/django/docker.md for more information to deploy your own docker containers with your app
+you can view https://github.com/django-ui/djangoui/blob/main/docs/03_docker.md for more information to deploy your own docker containers with your app
 
 #### Next step:
 
 Next step is to build and create your app: 
-    https://github.com/geospaces-org/docs/blob/main/django/02_createapp.md
+    https://github.com/django-ui/djangoui/blob/main/docs/02_createapp.md
 
 -------------------------------------------------------------------------------------------
 
@@ -167,5 +167,5 @@ Help millions of new innovations to pop in giving them a baseline.
 
 ## Refences:
 
-1. goto https://github.com/geospaces-org/docs/blob/main/django/docker.md to get all docs
+1. goto https://github.com/django-ui/djangoui/blob/main/docs/02_createapp.md to get all docs
 

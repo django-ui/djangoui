@@ -20,7 +20,7 @@ You can clone or fork the main repo and start building your app in few minutes.
 
 Run the following commands
 ```
-    git clone https://github.com/sada-narayanappa/LearnDjango.git
+    git clone https://github.com/django-ui/djangoui.git
     cd LearnDjango
     pip install -r requirements.txt
     make run
@@ -48,7 +48,7 @@ https://youtube.com/playlist?list=PLEpvS3HCVQ58at6W2qxGoH8rWBTfNrq99
 ---
 ## Refences:
 1. See here for more info
-    https://github.com/sada-narayanappa/LearnDjango/blob/master/docs/01_first.md
+    https://github.com/django-ui/djangoui.git
 
 # TO create app 
 

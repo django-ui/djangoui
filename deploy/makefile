@@ -2,7 +2,7 @@ BASENAME=geo-rhel9.21-base
 BASENAME-gpu=geo-rhel9.21-base-gpu
 DOCKERBASE=Dockerfile-rhel9-cpu-base
 DOCKERBASE-gpu=Dockerfile-ubuntucuda11.4
-DOCKERHUB=sada001/geo
+DOCKERHUB=username/geo
 # ------------------------------- CREATE BASE IMAGE
 base:
 	docker  build --tag=$(BASENAME) -f $(DOCKERBASE) .
@@ -11,7 +11,7 @@ base-gpu:
 	docker  build --tag=$(BASENAME) -f $(DOCKERFILEgpu) .
 
 # You can push the image to doker repo 
-# make sure you login using 'docker login --username sada001 #or whatever username you want'
+# make sure you login using 'docker login --username daya001 #or whatever username you want'
 base-push:
 	docker tag $(BASENAME) $(DOCKERHUB):$(BASENAME)
 	docker push $(DOCKERHUB):$(BASENAME)

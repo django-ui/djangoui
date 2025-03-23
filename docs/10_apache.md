@@ -32,7 +32,7 @@ port and send the results back.
 When a request is made to "http://myapp.yourdomain.org" apache will send the request 
 and act as a middle agent to transport information " http://localhost:8003/" and 
 
-* Notice * when the url is 'http://edu.geospaces.org', it redirets to https.
+* Notice * when the url is 'http://edu.server.org', it redirets to https.
 Https service uses certificates obtained from 'https://letsencrypt.org/'
 More about this later.
 
@@ -70,15 +70,15 @@ More about this later.
 # Secure your server  
 #
 <VirtualHost *:80>
-    ServerName  edu.geospaces.org
-    ServerAlias edu.geospaces.org
-    Redirect / https://edu.geospaces.org/
+    ServerName  edu.server.org
+    ServerAlias edu.server.org
+    Redirect / https://edu.server.org/
 </VirtualHost>
 
 <IfModule mod_ssl.c>
 
 <VirtualHost *:443>
-    ServerName edu.geospaces.org
+    ServerName edu.server.org
     ProxyRequests Off
     <Proxy *>
         #Order deny,allow
@@ -95,10 +95,10 @@ More about this later.
         Order allow,deny
         Allow from all
     </Location>
-ServerAlias edu.geospaces.org
+ServerAlias edu.server.org
 Include /etc/letsencrypt/options-ssl-apache.conf
-SSLCertificateFile /etc/letsencrypt/live/edu.geospaces.org/fullchain.pem
-SSLCertificateKeyFile /etc/letsencrypt/live/edu.geospaces.org/privkey.pem
+SSLCertificateFile /etc/letsencrypt/live/edu.server.org/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/edu.server.org/privkey.pem
 </VirtualHost>
 
 </IfModule>
