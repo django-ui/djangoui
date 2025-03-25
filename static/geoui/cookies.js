@@ -6,11 +6,13 @@ function saveZZValues() {
     lret = {
             input:    {},
             textarea: {},
-            //select:   {},
+            select:   {},
             checkbox: {}
     }
     ret = ZZvals || lret
 
+    //console.log("******HELLO**********", k)
+    
     for (const [k, v] of Object.entries(ret)) {
         var inputs = document.getElementsByTagName(k);
 
@@ -25,6 +27,9 @@ function saveZZValues() {
                     ret['checkbox'][id] = $(id1).is(':checked')
                 else
                     ret[k][id] = $(id1).val()
+            }
+            if (k == 'select' ) {
+                ret[k][id] = $(id1).val()
             }
             else{
                 ret[k][id] = document.getElementById(id).innerHTML;
