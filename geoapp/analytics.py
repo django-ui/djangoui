@@ -36,7 +36,7 @@ def loganalytics(r):
         uri,reqm,remt =  "URI", "method", "remote-ip"
         pass
 
-    out = f"{r.user},{uri},{reqm},{remt}"
+    out = f'{r.user},{uri},{reqm},{remt}'
     loga.error(f"{out}")
 
 

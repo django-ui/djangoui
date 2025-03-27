@@ -1,4 +1,6 @@
 kanban
+my_config.py
+.venv
 static/data
 db.sqlite3
 .vscode

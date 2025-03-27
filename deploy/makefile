@@ -10,7 +10,7 @@ base:
 base-gpu:
 	docker  build --tag=$(BASENAME) -f $(DOCKERFILEgpu) .
 
-# You can push the image to doker repo 
+# You can push the image to docker repo 
 # make sure you login using 'docker login --username daya001 #or whatever username you want'
 base-push:
 	docker tag $(BASENAME) $(DOCKERHUB):$(BASENAME)
