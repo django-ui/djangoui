@@ -1,11 +1,13 @@
+# set your environment variable $docker_username to get the 
+
 BASENAME=geo-rhel9.21-base
 BASENAME-gpu=geo-rhel9.21-base-gpu
 DOCKERBASE=Dockerfile-rhel9-cpu-base
 DOCKERBASE-gpu=Dockerfile-ubuntucuda11.4
-DOCKERHUB=username/geo
+DOCKERHUB=${docker_username}/geo
 # ------------------------------- CREATE BASE IMAGE
 base:
-	docker  build --tag=$(BASENAME) -f $(DOCKERBASE) .
+	docker  build --no-cache=true  --tag=$(BASENAME) -f $(DOCKERBASE) .
 
 base-gpu:
 	docker  build --tag=$(BASENAME) -f $(DOCKERFILEgpu) .

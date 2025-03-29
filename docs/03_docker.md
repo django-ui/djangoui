@@ -19,7 +19,7 @@ If you read 'Dockerfile-rhel9-cpu-base' - we will build from rhel image and inst
 You can build the base image using the command:
 The following command will:
 
-  * create a dcoker image named 'geo-rhel9.21-base';
+  * create a docker image named 'geo-rhel9.21-base';
   * a python3.12 and create a user named 'poduser' with some decent bash profiles.
   * installs standard pythin packages 
 
