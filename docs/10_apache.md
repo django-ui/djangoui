@@ -105,7 +105,7 @@ SSLCertificateKeyFile /etc/letsencrypt/live/edu.server.org/privkey.pem
 
 ```
 
-Make sure mod_sll is enabled in '/etc/apache2/mods-enabled' folder
+Make sure mod_ssl is enabled in '/etc/apache2/mods-enabled' folder
 
 ```
 # IN FOLDER: /etc/apache2/mods-enabled
