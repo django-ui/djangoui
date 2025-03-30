@@ -16,6 +16,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 SECRET_KEY = 'pr75j7t*r!j=oac!798tazlecdo0%k0rasre@!f_&0u%2(=nty'
 DEFAULT_DOMAIN = "https://www.example.org"
 
+CSRF_TRUSTED_ORIGINS = ['https://*.127.0.0.1']
+
+
 import os, sys, glob
 from django.urls import path, include
 
