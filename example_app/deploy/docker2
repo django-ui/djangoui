@@ -1,0 +1,35 @@
+# Specify the parent image from which we build
+FROM llmappbase:latest
+EXPOSE 8000
+
+USER 0
+RUN rm -rf /tmp/geoapp.log
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+
+#RUN \rm -i /home/${USER}/apps/llmapp
+COPY --chown=${USER}:${USER} llmapp/ /home/${USER}/llmapp/
+
+ENV USER=poduser
+USER ${USER}
+
+WORKDIR /home/${USER}
+RUN mkdir .django
+RUN cp llmapp/deploy/home/my_config.py .django/
+RUN cp llmapp/deploy/home/* /home/${USER}
+
+USER 0
+RUN pip install -r llmapp/requirements.txt
+
+
+ENV USER=poduser
+USER ${USER}
+WORKDIR /home/${USER}/apps/
+RUN python manage.py migrate
+
+
+# Make  sure CMD is before the ENTRYPOINT
+#
+#CMD ["make run"]
+#ENTRYPOINT ["bash", "-c"]
+#ENTRYPOINT ["bash", "-c", "make run"]
