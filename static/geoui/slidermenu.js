@@ -39,6 +39,25 @@ function menuCollapseAll(){
         $(this).prev().addClass('collapsed');
     });
 }
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function findItemAndSet(label){
+    var as = $('#sidebar').find("a")
+    var i = 0
+    //console.log(as)
+    for ( ; i< as.length; i++) {
+        var l = (as[i].text) ? as[i].text.trim(): ""
+        if ( l === label) {
+            //console.log(l, label, "====")
+            menuExpandAll()
+            menusetActive(as[i])
+            var oc = as[i].onclick
+            oc()
+            break
+        }
+    }
+    return as[i]
+}
+
 function menusetActive(a) {
     $('#sidebar').find('ul li').each(function (i) {
         $(this).removeClass('active');
@@ -109,6 +128,13 @@ function menuItemClicked(d, a) {
     _sliderMenu_DefaultMenuItemClicked(d,a)
 }
 
+function replaceInDoubleQuotes(str, charToReplace, replacement) {
+    return str.replace(/"([^"]*)"/g, function(match, group) {
+      return '"' + group.replace(new RegExp(charToReplace, 'g'), replacement) + '"';
+    });
+}
+
+  
 function getSidebarHTML(omenu ) {
     var out="";
     var inside = 0;
@@ -130,9 +156,15 @@ function getSidebarHTML(omenu ) {
             out += om + "\n";
             continue;
         }
-        var os  = om.split(";");
+
+        let qs = "QUOTED-SEMICOLON"
+        let om1 = replaceInDoubleQuotes(om, ";" , qs)
+        var os  = om1.split(";");
+        //var os = om.split(/;(?=(?:[^"]*"[^"]*")*$)/g);
         for (var o in os){
-            os[o] = os[o].trim();
+            let oso = os[o]
+            os[o] = oso.replaceAll(qs, ";", 'g').trim()
+
         }
         var hr, a, t, ic, it,show, desc;
         lvl = olevel(om);
