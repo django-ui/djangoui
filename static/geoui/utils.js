@@ -131,7 +131,18 @@ function toggleDiv1(di){
     } else{
         $(di).show();
     }
-}// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function myCopyToClipboard(textToCopy) {
+    // Create a temporary textarea element
+    var tempTextArea = $("<textarea>");
+    tempTextArea.val(textToCopy).appendTo("body");
+    tempTextArea.select();
+    document.execCommand("copy");
+    tempTextArea.remove();
+    //console.log(textToCopy)
+}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 function copyText(id, val) {
     if ( !id) {
         id =  "share_copy";
@@ -143,6 +154,24 @@ function copyText(id, val) {
 
     document.execCommand("copy");
     //salert("Copied to clipboard: " + copyText.value);
+}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+function copyRichText(html) {
+    const htmlContent = html;
+    // Create a temporary element to hold the HTML content
+    const tempElement = document.createElement("div");
+    tempElement.innerHTML = htmlContent;
+    document.body.appendChild(tempElement);
+    // Select the HTML content
+    const range = document.createRange();
+    range.selectNode(tempElement);
+    // Copy the selected HTML content to the clipboard
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand("copy");
+    selection.removeAllRanges();
+    document.body.removeChild(tempElement);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
