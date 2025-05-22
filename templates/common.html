@@ -18,8 +18,9 @@
 <script src="/static/bc/jquery-ui/jquery-ui.js/"></script>
 <script src="/static/bc/jquery-form/src/jquery.form.js/"></script>
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
+<!-- Global site tag (gtag.js) - Google Analytics 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-34483841-1/"></script>
+ -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -265,6 +266,22 @@ code::after, code::before {
     background-color: #e0e0e0;
 }
 
+.rbutt16{
+    height: 16px;
+    width: 16px;
+    background-color: transparent;
+    border-radius: 8px;
+    border: 0px;
+    text-align: center;
+    font-size: 8px;
+    font-weight: 100;
+    padding: 0px;
+}
+.rbutt16:hover {
+    border-radius: 8px;
+    background-color: #e0e0e0;
+}
+
 .rbutt{
     height: 40px; 
     border-radius: 20px;
@@ -478,13 +495,17 @@ code::after, code::before {
 
 <script>
 var STOP_ALERTS= 0
-function salert(txt, cls, delay){
+function salert(txt, cls=null, delay=2000){
     if( STOP_ALERTS)
         return;
 
     icon="fa fa-check"
     iconhead = "";
-    if (cls == "btn-success") {
+    if ( !cls) {
+        cls = "btn-success"
+        icon="fa fa-check"
+        iconhead="Success"
+    } else if ( cls == "btn-success") {
         icon="fa fa-check"
         iconhead="Success"
     } else if (cls == "btn-warning") {
@@ -502,7 +523,7 @@ function salert(txt, cls, delay){
 
     $('#1').css('z-index', 4);
 
-    $('#1').data('delay', delay || 4000);
+    $('#1').data('delay', delay );
     $('.toast').toast('show');
     cls = cls || "btn-success"
     $('#toastid').html(txt).attr('class', cls)
