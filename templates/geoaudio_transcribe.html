@@ -1,0 +1,63 @@
+<!--
+-->
+
+<script>
+if (typeof(_GEOAUDIO_CONTROL) === "undefined" ) {
+    _GEOAUDIO_CONTROL = "faudio"
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+var _geoAudio = new GeoAudio(() => { }, _GEOAUDIO_CONTROL)
+var _TRANSCRIBE_IN_PROGRESS = false
+
+async function transcribeCB(responseTxt, statusTxt, xhr, context, formData) {
+    //console.log("Got:", responseTxt.substr(0, 64))
+    _TRANSCRIBE_IN_PROGRESS = false
+    $('#prompt').val(responseTxt)
+    if (formData && formData.callback) {
+        formData.callback()
+    }
+}
+async function transcribe(callback=null) {
+    if ( _TRANSCRIBE_IN_PROGRESS )
+        return 
+    _TRANSCRIBE_IN_PROGRESS = true
+    console.log("TRANSCRIBING ... ")
+    data = {
+        callback: callback,  file: _geoAudio.bblob
+    }
+    resp = await callws('/geoaudio/transcribe/', "", transcribeCB, data );
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+async function listen(first = 0, id = '#listen', wakeword="", callback=null) {
+    if (first) {
+        $(id).addClass("ripples_active")
+        $(id).blur()
+        //console.log("==> 1. ", new Date().toISOString()  )
+        _geoAudio.stopRecording()
+        _geoAudio.faudio.src = null
+        _geoAudio.startRecording()
+        setTimeout(listen, 2000)
+        return
+    }
+    var silent = false
+    //console.log("==> 2. ", a.faudio.duration , new Date().toISOString()  )
+    try {
+        await _geoAudio.exportRecording()
+        silent = await isSilent(_geoAudio.faudio.src, 1.5)
+        if ((silent && _geoAudio.faudio.duration > 2) || _geoAudio.faudio.duration > 10) {
+            $(id).attr("color", "")
+            $(id).removeClass("ripples_active")
+            await _geoAudio.stopRecording()
+            transcribe(callback)
+            return
+        }
+        else {
+            transcribe()
+        }
+    } catch (e) {
+        console.log(e)
+    }
+    //console.log("==> 0. ", new Date().toISOString()  )
+    setTimeout(listen, 2000, 0, id)
+}   
+</script>
