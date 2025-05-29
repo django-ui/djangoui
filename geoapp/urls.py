@@ -8,6 +8,13 @@ from django.conf import settings
 
 app_name = 'geoapp' 
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def catchAll(request):
+    return mango.Common(request)    
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
@@ -23,7 +30,7 @@ urlpatterns = [
     
 ] + settings.DETECTED_URLS + [
     path('oidc/', include('mozilla_django_oidc.urls')),
-    re_path(r'^.*/$', mango.Common, name='catchall'),
+    re_path(r'^.*/$', catchAll, name='catchall'),
 ]
 
 #urlpatterns = staticfiles_urlpatterns() + urlpatterns
