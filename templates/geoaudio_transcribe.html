@@ -1,5 +1,8 @@
 <!--
 -->
+<style>
+.ripples_activea{animation: growAndFadeR 3s infinite ease-out;}    
+</style>
 
 <script>
 if (typeof(_GEOAUDIO_CONTROL) === "undefined" ) {
@@ -10,45 +13,52 @@ var _geoAudio = new GeoAudio(() => { }, _GEOAUDIO_CONTROL)
 var _TRANSCRIBE_IN_PROGRESS = false
 
 async function transcribeCB(responseTxt, statusTxt, xhr, context, formData) {
-    //console.log("Got:", responseTxt.substr(0, 64))
     _TRANSCRIBE_IN_PROGRESS = false
-    $('#prompt').val(responseTxt)
-    if (formData && formData.callback) {
-        formData.callback()
+    //console.log("transCB ... ", responseTxt, context.dest)
+    if ( context.dest) {
+        $(context.dest).val(responseTxt)
+    }
+    if ( context.callback) {
+        context.callback()
     }
 }
-async function transcribe(callback=null) {
-    if ( _TRANSCRIBE_IN_PROGRESS )
+async function transcribe(callback=null, checkProgress=1, dest='#prompt') {
+    if ( checkProgress && _TRANSCRIBE_IN_PROGRESS )
         return 
     _TRANSCRIBE_IN_PROGRESS = true
-    console.log("TRANSCRIBING ... ")
     data = {
-        callback: callback,  file: _geoAudio.bblob
+        callback: callback,  file: _geoAudio.bblob, dest: dest
     }
+    //console.log("TRANSCRIBING ... ", data)
     resp = await callws('/geoaudio/transcribe/', "", transcribeCB, data );
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-async function listen(first = 0, id = '#listen', wakeword="", callback=null) {
-    if (first) {
-        $(id).addClass("ripples_active")
-        $(id).blur()
-        //console.log("==> 1. ", new Date().toISOString()  )
+async function geoaudio_trans_listen(opts={}) {
+    let DEF_OPTS={first:0, id: '#listen', wakeword:"", max_wait:10, waitForSilence:0, callback:null, dest:'#prompt'}
+    opts = Object.assign({}, DEF_OPTS, opts);
+
+    if (opts.first) {
+        $(opts.id).addClass("ripples_activea")
+        $(opts.id).blur()
         _geoAudio.stopRecording()
         _geoAudio.faudio.src = null
         _geoAudio.startRecording()
-        setTimeout(listen, 2000)
+        opts.first = 0
+        setTimeout(geoaudio_trans_listen, 2000, opts)
         return
     }
     var silent = false
+    opts.first = 0
     //console.log("==> 2. ", a.faudio.duration , new Date().toISOString()  )
     try {
         await _geoAudio.exportRecording()
-        silent = await isSilent(_geoAudio.faudio.src, 1.5)
-        if ((silent && _geoAudio.faudio.duration > 2) || _geoAudio.faudio.duration > 10) {
-            $(id).attr("color", "")
-            $(id).removeClass("ripples_active")
+        silent = await isSilent(_geoAudio.faudio.src, 2)
+
+        if ((silent && _geoAudio.faudio.duration > 2) || (!opts.waitForSilence && _geoAudio.faudio.duration > opts.max_wait)) {
+            $(opts.id).attr("color", "")
+            $(opts.id).removeClass("ripples_activea")
             await _geoAudio.stopRecording()
-            transcribe(callback)
+            transcribe(opts.callback, 0, opts.dest)
             return
         }
         else {
@@ -58,6 +68,11 @@ async function listen(first = 0, id = '#listen', wakeword="", callback=null) {
         console.log(e)
     }
     //console.log("==> 0. ", new Date().toISOString()  )
-    setTimeout(listen, 2000, 0, id)
-}   
+    setTimeout(geoaudio_trans_listen, 2000, opts)
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+async function listen(first = 0, id = '#listen', wakeword="", callback=null) {
+    let opts={first:first, id: id, wakeword:wakeword, max_wait:10, waitForSilence:1, callback:callback}
+    return geoaudio_trans_listen(opts)
+}
 </script>

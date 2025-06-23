@@ -38,7 +38,7 @@ class GeoAudio {
         var o = this
 
         navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-            console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
+            //console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
 
             var config = {sampleRate: 48000}
             config = {sampleRate: 16000}
@@ -74,13 +74,13 @@ class GeoAudio {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     async stopRecording() {
         if ( !this.rec ) {
-            console.log("Recording may not have started...")
+            //console.log("Recording may not have started...")
             return -1
         }
-        console.log("Stopping the recording ...")
+        //console.log("Stopping the recording ...")
         this.exportRecording()
         this.gumStream.getAudioTracks()[0].stop();
-        this.callBack("stopped", this.bblob)
+        //this.callBack("stopped", this.bblob)
         this.rec.stop();
         return 0
     }
@@ -201,16 +201,15 @@ async function isSilent(audioFileUrl, duration=2, silenceThreshold=0.05) {
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     
     const sampleRate = audioBuffer.sampleRate; // Samples per second
-    const lastTwoSecondsStart = audioBuffer.length - sampleRate * 2; // Start index of the last 2 seconds
+    const lastIndex = audioBuffer.length - sampleRate * duration; // Start index of the last 2 seconds
     
-    if (lastTwoSecondsStart < 0) {
+    if (lastIndex < 0) {
         //throw new Error("Audio file is less than 2 seconds long.");
         return 0
     }
 
     // Extract the last 2 seconds of data (assuming mono audio for simplicity)
-    const channelData = audioBuffer.getChannelData(0).slice(lastTwoSecondsStart);
-
+    const channelData = audioBuffer.getChannelData(0).slice(lastIndex);
     const isSilent = channelData.every(sample => Math.abs(sample) < silenceThreshold);
 
     return isSilent;

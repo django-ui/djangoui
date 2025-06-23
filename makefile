@@ -47,7 +47,7 @@ run_secure:
 	python manage.py runserver_plus 0:${PORT} ${OPTS}
 
 asgi:
-	uvicorn --host 0.0.0.0  --port ${PORT}  geoapp.asgi:application --reload
+	uvicorn --host 0.0.0.0  --workers 4 --port ${PORT}  geoapp.asgi:application --reload
 
 # ------------------------------------------------------------------------
 pull: 
