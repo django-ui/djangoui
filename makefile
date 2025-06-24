@@ -50,6 +50,12 @@ asgi:
 	uvicorn --host 0.0.0.0  --workers 4 --port ${PORT}  geoapp.asgi:application --reload
 
 # ------------------------------------------------------------------------
+git: 
+	@echo "Pulling sub directories ..."
+	@for d in */ ; do \
+		if [ -e $$d/.git ]; then echo "==> $${d}"; fi \
+	done
+# ------------------------------------------------------------------------
 pull: 
 	@git pull
 	@echo "Pulling sub directories ..."
