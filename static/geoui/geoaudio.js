@@ -15,11 +15,10 @@ class GeoAudio {
 
     constructor(callBack=()=>{}, control="faudio") {
         this.faudio = document.getElementById(control);
+        this.callBack = callBack
         if ( !this.faudio) {
             console.log("Control not found")
-            return
         }
-        this.callBack = callBack
     }
 
     isRecording() {

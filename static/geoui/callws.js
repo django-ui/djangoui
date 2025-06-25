@@ -159,7 +159,8 @@ This will call WS service
 var callws_default_opts= {
     getIDS: false,
     await:  0,
-    log: 0
+    log: 0,
+    show_busy: 1,
 }
 
 if (typeof busy !== 'function') { // if no one defined busy or nbusy - we make it empty
@@ -188,7 +189,9 @@ async function callws( url="/ui/test/", formName="", callbacks=null, context={},
     if (!formData)
         return;
 
-    busy() // defined in common.html - should move it here
+    if (opts.show_busy)
+        busy() // defined in common.html - should move it here
+    
     if (opts.log )
         dumpformdata(formData)
     var data = "?"
