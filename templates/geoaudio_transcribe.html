@@ -19,7 +19,7 @@ async function transcribeCB(responseTxt, statusTxt, xhr, context, formData) {
         $(context.dest).val(responseTxt)
     }
     if ( context.callback) {
-        context.callback()
+        (typeof(context.callback) === "string")? eval(context.callback): context.callback()
     }
 }
 async function transcribe(callback=null, checkProgress=1, dest='#prompt') {

@@ -11,6 +11,9 @@ function detectWakewordCB(responseTxt, statusTxt, xhr, context, formData) {
     if (ret && ret.length > 0) {
         console.log(ret)
         stopWW()
+        if (context.callback){
+            (typeof(context.callback) === "string")? eval(context.callback): context.callback(ret)
+        }
     }
 }
 let WW_AUDIO_Stream = null
@@ -20,7 +23,7 @@ function stopWW() {
         WW_AUDIO_Stream = null
     }
 }
-function startWW(cb = () => { }) {
+function startWakeWordDetectLoop(cb = () => { }) {
     if (!navigator.getUserMedia) {
         console.log('getUserMedia not supported in this browser.');
         return
