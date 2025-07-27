@@ -1,15 +1,77 @@
+<style>
+.listening-container {
+    position: fixed;
+    left: 50%;
+    bottom: 8;
+    display: none;
+}
+
+.listening-icon {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Adjust size as needed */
+  animation: rotate-listening 5s linear infinite; /* Apply the animation */
+  transform-origin: center center; /* Ensure rotation is around the center */
+  border-radius: 50%;
+}
+@keyframes rotate-listening {
+  from {
+    transform: rotate(0deg); /* Start at 0 degrees */
+  }
+  to {
+    transform: rotate(360deg); /* Rotate a full 360 degrees */
+  }
+}
+
+.listening-icon1 {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Adjust size as needed */
+  --rotation: 0deg;
+  --scale: 1;
+  transform: rotate(var(--rotation)) scale(var(--scale));
+  transition: transform 0.5s ease-in-out; /* Adjust timing as needed */
+  border-radius: 50%;
+}
+</style>
+<div class="listening-container" onclick="stopWW()">
+  <img src="/static/imgs/listening.jpeg" alt="I am listening" class="listening-icon1">
+</div>
+
 <script>
+
+const listenElement = document.querySelector('.listening-icon1');
+function animateListeningDiv() {
+    // Generate random rotation and scale values
+    const randomRotation = Math.random() * 360; // 0 to 360 degrees
+    const randomScale = Math.random() * 0.5 + 0.7; // Scale between 0.5 and 1
+
+    // Update CSS variables
+    listenElement.style.setProperty('--rotation', randomRotation + 'deg');
+    listenElement.style.setProperty('--scale', randomScale);
+    //console.log(randomRotation, randomScale, siriElement )
+
+    // Start the animation and update variables periodically
+    //setTimeout(animateListeningDiv, 3000);
+}
+//setInterval(animateListeningDiv, 3000);
+
+
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia ||
     navigator.msGetUserMedia;
 
 let _START_DETECT_WAKEWORD = 1
 let _CHECK_WAKEWORD_IN_PROGRESS = 0
 
+function playDetect() {
+    var audio = new Audio('/static/act.wav');
+    audio.play();
+}
+
 function detectWakewordCB(responseTxt, statusTxt, xhr, context, formData) {
     _CHECK_WAKEWORD_IN_PROGRESS = 0
     var ret = (responseTxt) ? JSON.parse(responseTxt) : null
     if (ret && ret.length > 0) {
         console.log(ret)
+        if ( context.playDetect)    playDetect()
         stopWW()
         if (context.callback){
             (typeof(context.callback) === "string")? eval(context.callback): context.callback(ret)
@@ -22,17 +84,20 @@ function stopWW() {
         WW_AUDIO_Stream.getAudioTracks()[0].stop();
         WW_AUDIO_Stream = null
     }
+    //$('.listening-container').hide()
 }
 function startWakeWordDetectLoop(cb = () => { }) {
     if (!navigator.getUserMedia) {
         console.log('getUserMedia not supported in this browser.');
         return
     }
+    //$('.listening-container').show()
+
     let audioContext;
     let volume
     let recorder;
 
-    navigator.getUserMedia({ audio: true, video: false }, function (stream) {
+    navigator.getUserMedia({ audio: true, video: false, playDetect: 1 }, function (stream) {
 
         WW_AUDIO_Stream = stream
         const context = window.AudioContext || window.webkitAudioContext;
@@ -82,7 +147,7 @@ function startWakeWordDetectLoop(cb = () => { }) {
             const blob = new Blob([int16Array], { type: 'application/octet-stream' });
             //ws.send(blob);
             data = {
-                callback: cb, file: blob
+                callback: cb, file: blob, playDetect: playDetect
             }
             //resp = setTimeout(callws, 10, '/geoaudio/detectWakeword/', "", detectWakewordCB, data, {show_busy: 0});
             callws('/geoaudio/detectWakeword/', "", detectWakewordCB, data, {show_busy: 0});
