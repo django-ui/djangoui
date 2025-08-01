@@ -64,7 +64,7 @@ from django.utils.log import DEFAULT_LOGGING
 LOGGING_CONFIG = None
 
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-LOGFILE  = os.environ.get('LOGFILE', '/tmp/geoapp.log')
+LOGFILE  = os.environ.get('LOGFILE', 'logs/app.log')
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
