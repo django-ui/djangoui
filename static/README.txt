@@ -1,1 +1,1 @@
-biwer install highcharts
+bower install highcharts
