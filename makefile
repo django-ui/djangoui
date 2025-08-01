@@ -40,8 +40,8 @@ clean:
 # ------------------------------------------------------------------------
 #
 #
-urun:
-	uv python manage.py runserver 0:${PORT}
+uvrun:
+	uv run python manage.py runserver 0:${PORT}
 
 run:
 	python manage.py runserver 0:${PORT}
