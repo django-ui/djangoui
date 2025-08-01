@@ -65,6 +65,8 @@ LOGGING_CONFIG = None
 
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 LOGFILE  = os.environ.get('LOGFILE', 'logs/app.log')
+if not os.path.exists('logs'):
+    os.mkdir("logs")
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
