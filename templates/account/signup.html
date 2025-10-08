@@ -35,7 +35,7 @@ label{
 <div class="container-fluid text-center fc"    >
     <br/><br/>
     <h2 id="head_banner">{% trans "Sign Up " %}</h2>
-    <p class="exist_account_info">{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+    <p class="exist_account_info">{% blocktrans %}Already have an account? Then please sign in {% endblocktrans %} <a href="{{ login_url }}">{% trans "sign in" %}</a>.</p>
     <br/><br/>
     
 <form class="container-fluid text-center fc" id="signup_form" method="post" action="{% url 'account_signup' %}">

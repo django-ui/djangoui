@@ -126,7 +126,7 @@ class MyResetPasswordForm(ResetPasswordForm):
             )
             url = build_absolute_uri(request, path)
             url1 = request.POST.get("DOMAIN") + path
-            url1 = settings.DEFAULT_DOMAIN + path
+            #url1 = settings.DEFAULT_DOMAIN + path
 
             context = {
                 "current_site": current_site,
