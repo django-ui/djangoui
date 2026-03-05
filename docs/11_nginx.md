@@ -1,3 +1,0 @@
-# RUNNING USING NGINX
-
-### TBD
