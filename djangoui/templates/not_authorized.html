@@ -1,0 +1,20 @@
+{% extends "common.html" %}
+{% block content %}
+
+<div class="container">
+    <br/><br/>
+    <section id="content">
+        <H1><center> Not authorized - you will be redirected to home page </center> </H1>
+    </section>
+
+    You are not authorized to use this app => please check with th application admin
+
+</div>
+
+
+<script>
+setTimeout("window.location.replace('/')", 6000)
+</script>
+{% endblock %}
+
+
