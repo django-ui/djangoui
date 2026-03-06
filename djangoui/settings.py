@@ -46,10 +46,11 @@ AUTO_LOGOUT_DELAY=30000
 
 #ACCOUNT_AUTHENTICATION_METHOD="username_email"
 #ACCOUNT_LOGIN_METHODS
-ACCOUNT_USERNAME_REQUIRED=False
+#ACCOUNT_USERNAME_REQUIRED=False
 #ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
 #ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
-ACCOUNT_EMAIL_REQUIRED = True
+#ACCOUNT_EMAIL_REQUIRED = True
+#ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 #ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT=86400000000
 #ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_SESSION_REMEMBER = True
@@ -254,7 +255,8 @@ SITE_ID = 1
 DETECT_INSTALLED_APPS = False
 DETECTED_APPS = []
 DETECTED_URLS = []
-
+INCLUDE_APPS  = []
+INCLUDE_APPS_URLS = [] # used in urls.py to include urls
 #------------------------------------------------------------------------------
 sys.path.append(os.path.expanduser("~/.django") )
 if (os.path.exists("my_config.py")):
@@ -324,9 +326,16 @@ def detectInstalledApps(appslist):
 if ( DETECT_INSTALLED_APPS ):
     detectInstalledApps(INSTALLED_APPS)
 # -----------------------------------------------------------------------------------------
-INSTALLED_APPS = INSTALLED_APPS + DETECTED_APPS 
+DETECTED_APPS += INCLUDE_APPS
+INSTALLED_APPS = INSTALLED_APPS + DETECTED_APPS
+
+# Include URLS 
+DETECTED_URLS = [ path(f'{a}/', include(f'{a}.urls'), name=a) for a in INCLUDE_APPS ]
 if (os.path.exists("mainapp") and 'mainapp' not in INSTALLED_APPS):
     INSTALLED_APPS += ['mainapp'] 
+    DETECTED_URLS += [path(f'mainapp/', include(f'mainapp.urls'), name='mainapp') ]
+
+
 
 STATIC_INSTALL_DIRS = [ f'{BASE_DIR}/{c}/static/'  for c in DETECTED_APPS 
                             if os.path.exists(f'{BASE_DIR}/{c}/static/') ]
