@@ -21,11 +21,16 @@ You can clone or fork the main repo and start building your app in few minutes.
 Run the following commands
 ```
     git clone https://github.com/django-ui/djangoui.git
-    cd LearnDjango
+    cd example_project
+    if [ ! -d ".venv" ]; then
+        python3 -m venv .venv
+    fi
+    source .venv/bin/activate
     pip install -r requirements.txt
-    make run
+    pip install ..
+    ./run.sh
 ```
-If everything works as expected, you may navigate to http://localhost:8003
+If everything works as expected, you may navigate to http://localhost:8000
 
 Now you have the base app working, you can start building your app.
 see the videos and other documentations below.

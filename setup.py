@@ -1,8 +1,8 @@
 from setuptools import setup
 
-version=0.101
+version=0.125
 
-setup(name='djangoui', 
+setup(name='djangouiapp', 
       version=str(version), 
       description='Very simple quick way to deploy Django Application',
       url='https://github.com/django-ui/djangoui.git',
@@ -11,7 +11,7 @@ setup(name='djangoui',
       license='Apache License 2.0',
       packages = ['djangoui'],
       include_package_data=True,
-      package_data={'djangoui':['djangoui/*', 'djangoui/**/*' ]},
+      package_data={'djangoui':['*', 'djangoui/*', 'djangoui/**/*' ]},
       zip_safe=False,
       install_requires=['django'],
       classifiers=[
