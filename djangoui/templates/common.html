@@ -15,6 +15,83 @@
 <script src="/static/bower_components/jquery-ui/jquery-ui.js/"></script>
 <script src="/static/bower_components/jquery-form/src/jquery.form.js/"></script>
 
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-34483841-1/"></script>
+ -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-34483841-1');
+</script>
+
+<!-- Theme Toggle Script -->
+<script>
+  // Theme Management Functions
+  const ThemeManager = {
+    // Get current theme from localStorage or system preference
+    getCurrentTheme: function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme;
+      }
+      // Check system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    },
+    
+    // Set theme on document
+    setTheme: function(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      
+      // Dispatch custom event for other components to listen to
+      window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: theme } }));
+    },
+    
+    // Toggle between light and dark
+    toggleTheme: function() {
+      const currentTheme = this.getCurrentTheme();
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      this.setTheme(newTheme);
+      return newTheme;
+    },
+    
+    // Initialize theme on page load
+    init: function() {
+      const theme = this.getCurrentTheme();
+      this.setTheme(theme);
+      
+      // Listen for system theme changes
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+    }
+  };
+  
+  // Initialize theme immediately (before page loads)
+  ThemeManager.init();
+  
+  // Expose functions globally for easy access
+  window.setTheme = function(theme) {
+    ThemeManager.setTheme(theme);
+  };
+  
+  window.toggleTheme = function() {
+    return ThemeManager.toggleTheme();
+  };
+  
+  window.getCurrentTheme = function() {
+    return ThemeManager.getCurrentTheme();
+  };
+</script>
+
 <link href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css/" rel="stylesheet" />
 
 <script src="/static/popper.min.js" ></script>

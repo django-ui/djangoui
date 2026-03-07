@@ -20,4 +20,33 @@
     <a class="nav-link" href="/example_app/info/"  > 
         <i class="fas fa-bolt"></i> <span class="our_menu">info</span></a>
 </li>
+ 
+<li class="nav-item mr-4 mb-2 mb-lg-0">
+    <a class="nav-link" onclick="toggleThemeDemo()" id="main-toggle">
+        <i class="fas fa-moon"></i>
+    </a>
+</li>
+
+<script>
+
+// Update theme display
+function updateThemeDisplay() {
+    const theme = window.getCurrentTheme();
     
+    const toggleBtn = document.getElementById('main-toggle');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (theme === 'dark') {
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+}
+
+// Toggle theme and update display
+function toggleThemeDemo() {
+    window.toggleTheme();
+    updateThemeDisplay();
+}
+updateThemeDisplay()
+</script>

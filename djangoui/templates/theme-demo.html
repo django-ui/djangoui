@@ -1,0 +1,252 @@
+{% extends 'common.html' %}
+{% block content %}
+
+<style>
+    .theme-demo-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    
+    .demo-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    
+    .theme-toggle-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 10px 20px;
+        border-radius: 25px;
+        border: 2px solid var(--border-color);
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .theme-toggle-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px var(--shadow-color);
+    }
+    
+    .color-swatch {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        margin: 10px;
+        border: 2px solid var(--border-color);
+    }
+    
+    .api-example {
+        background-color: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        padding: 15px;
+        margin: 10px 0;
+        font-family: monospace;
+        color: var(--text-color);
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        margin: 5px;
+    }
+</style>
+
+<button class="theme-toggle-btn" onclick="toggleThemeDemo()" id="main-toggle">
+    <i class="fas fa-moon"></i> <span id="toggle-text">Dark Mode</span>
+</button>
+<div class="theme-demo-container">
+    <div class="demo-card">
+        <h1>🎨 Dark Mode Theme Demo</h1>
+        <p>This page demonstrates the dark mode functionality implemented in your Django UI project.</p>
+        <p>Click the button in the top-right corner to toggle between light and dark themes!</p>
+    </div>
+
+    <div class="demo-card">
+        <h2>Current Theme Status</h2>
+        <div class="status-indicator">
+            <strong>Active Theme:</strong> <span id="current-theme">Loading...</span>
+        </div>
+        <div class="status-indicator">
+            <strong>Stored in:</strong> localStorage
+        </div>
+        <div class="status-indicator">
+            <strong>Auto-detect:</strong> ✅ Enabled
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <h2>🎯 Quick Actions</h2>
+        <button class="btn btn-primary m-2" onclick="window.setTheme('light')">
+            <i class="fas fa-sun"></i> Set Light Theme
+        </button>
+        <button class="btn btn-secondary m-2" onclick="window.setTheme('dark')">
+            <i class="fas fa-moon"></i> Set Dark Theme
+        </button>
+        <button class="btn btn-info m-2" onclick="window.toggleTheme()">
+            <i class="fas fa-exchange-alt"></i> Toggle Theme
+        </button>
+        <button class="btn btn-warning m-2" onclick="clearThemePreference()">
+            <i class="fas fa-undo"></i> Reset to System
+        </button>
+    </div>
+
+    <div class="demo-card">
+        <h2>📋 JavaScript API Examples</h2>
+        
+        <h4>Toggle Theme:</h4>
+        <div class="api-example">
+            const newTheme = window.toggleTheme();<br>
+            console.log('Switched to:', newTheme);
+        </div>
+
+        <h4>Set Specific Theme:</h4>
+        <div class="api-example">
+            window.setTheme('dark');  // or 'light'
+        </div>
+
+        <h4>Get Current Theme:</h4>
+        <div class="api-example">
+            const theme = window.getCurrentTheme();<br>
+            console.log('Current theme:', theme);
+        </div>
+
+        <h4>Listen for Theme Changes:</h4>
+        <div class="api-example">
+            window.addEventListener('themeChanged', function(event) {<br>
+            &nbsp;&nbsp;console.log('Theme changed to:', event.detail.theme);<br>
+            });
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <h2>🎨 CSS Variables in Action</h2>
+        <p>All these colors automatically adapt to the current theme:</p>
+        
+        <div>
+            <span class="color-swatch" style="background-color: var(--bg-color);" title="--bg-color"></span>
+            <span class="color-swatch" style="background-color: var(--text-color);" title="--text-color"></span>
+            <span class="color-swatch" style="background-color: var(--link-color);" title="--link-color"></span>
+            <span class="color-swatch" style="background-color: var(--card-bg);" title="--card-bg"></span>
+            <span class="color-swatch" style="background-color: var(--input-bg);" title="--input-bg"></span>
+            <span class="color-swatch" style="background-color: var(--border-color);" title="--border-color"></span>
+        </div>
+        
+        <p><small>Hover over swatches to see variable names</small></p>
+    </div>
+
+    <div class="demo-card">
+        <h2>🔗 Links & Typography</h2>
+        <p>This is regular text that uses <code>var(--text-color)</code></p>
+        <p><a href="#">This is a link</a> that uses <code>var(--link-color)</code></p>
+        <p><a href="#" style="text-decoration: underline;">Hover over this link</a> to see <code>var(--link-hover-color)</code></p>
+        <hr>
+        <p>The horizontal rule above uses <code>var(--border-color)</code></p>
+    </div>
+
+    <div class="demo-card">
+        <h2>📝 Form Elements</h2>
+        <div class="form-group">
+            <label for="demo-input">Text Input:</label>
+            <input type="text" id="demo-input" class="form-control" placeholder="Type something..." 
+                   style="background-color: var(--input-bg); color: var(--text-color); border-color: var(--input-border);">
+        </div>
+        
+        <div class="form-group">
+            <label for="demo-textarea">Textarea:</label>
+            <textarea id="demo-textarea" class="form-control" rows="3" placeholder="Enter text..."
+                      style="background-color: var(--input-bg); color: var(--text-color); border-color: var(--input-border);"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="demo-select">Select:</label>
+            <select id="demo-select" class="form-control"
+                    style="background-color: var(--input-bg); color: var(--text-color); border-color: var(--input-border);">
+                <option>Option 1</option>
+                <option>Option 2</option>
+                <option>Option 3</option>
+            </select>
+        </div>
+        
+        <button class="btn btn-primary" disabled>Disabled Button</button>
+    </div>
+
+    <div class="demo-card">
+        <h2>ℹ️ Features</h2>
+        <ul>
+            <li>✅ Automatic system theme detection</li>
+            <li>✅ Theme preference saved in localStorage</li>
+            <li>✅ Smooth theme transitions</li>
+            <li>✅ Syncs with system theme changes</li>
+            <li>✅ Easy-to-use JavaScript API</li>
+            <li>✅ CSS variables for consistent theming</li>
+            <li>✅ Works across all pages using common.html</li>
+        </ul>
+    </div>
+
+    <div class="demo-card">
+        <h2>📚 Documentation</h2>
+        <p>For complete documentation, see <code>DARK_MODE_GUIDE.md</code> in the project root.</p>
+        <p>For code examples, see <code>/static/js/theme-toggle-example.js</code></p>
+    </div>
+</div>
+
+<script>
+    // Update theme display
+    function updateThemeDisplay() {
+        const theme = window.getCurrentTheme();
+        document.getElementById('current-theme').textContent = theme.toUpperCase();
+        
+        const toggleBtn = document.getElementById('main-toggle');
+        const toggleText = document.getElementById('toggle-text');
+        
+        if (theme === 'dark') {
+            toggleBtn.innerHTML = '<i class="fas fa-sun"></i> <span id="toggle-text">Light Mode</span>';
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-moon"></i> <span id="toggle-text">Dark Mode</span>';
+        }
+    }
+    
+    // Toggle theme and update display
+    function toggleThemeDemo() {
+        window.toggleTheme();
+        updateThemeDisplay();
+    }
+    
+    // Clear theme preference (revert to system)
+    function clearThemePreference() {
+        localStorage.removeItem('theme');
+        location.reload();
+    }
+    
+    // Listen for theme changes
+    window.addEventListener('themeChanged', function(event) {
+        updateThemeDisplay();
+        console.log('Theme changed to:', event.detail.theme);
+    });
+    
+    // Initialize display
+    document.addEventListener('DOMContentLoaded', function() {
+        updateThemeDisplay();
+    });
+    
+    // Update immediately
+    updateThemeDisplay();
+</script>
+
+{% include 'footer.html' %}
+{% endblock %}

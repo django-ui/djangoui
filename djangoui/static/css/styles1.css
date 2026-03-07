@@ -1,12 +1,23 @@
+
+
 body {
-  font-weight: 400;
-  font-size: 1rem;
-  font-family: "Roboto", "Open Sans", sans-serif;
-  line-height: 1.6;
-  color: #1b1e24;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizelegibility;
+    font-weight: 400;
+    font-size: 1rem;
+    font-family: "Roboto", "Open Sans", sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizelegibility;
+}
+
+@media (prefers-color-scheme: dark){
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
 }
 
 footer {
@@ -14,8 +25,7 @@ footer {
 }
 
 footer h1, footer h2, footer h3, footer h4, footer h5, footer h6{
-    color: #fdb813;
-    color: #ffffff;
+    color: var(--text-color);
 	font-size: 14px;
 }
 
