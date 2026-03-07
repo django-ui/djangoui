@@ -18,12 +18,13 @@
     
 <li class="nav-item mr-4 mb-2 mb-lg-0">
     <a class="nav-link" href="/example_app/info/"  > 
-        <i class="fas fa-bolt"></i> <span class="our_menu">info</span></a>
+        <i class="fas fa-moon"></i><i class="fas fa-bolt"></i> <span class="our_menu">info</span></a>
 </li>
  
+
 <li class="nav-item mr-4 mb-2 mb-lg-0">
-    <a class="nav-link" onclick="toggleThemeDemo()" id="main-toggle">
-        <i class="fas fa-moon"></i>
+    <a class="nav-link" onclick="toggleThemeDemo()" href="#" id="main-toggle">
+        <i class="fas fa-moon"></i><span class="our_menu">.</span>
     </a>
 </li>
 
@@ -37,9 +38,9 @@ function updateThemeDisplay() {
     const toggleText = document.getElementById('toggle-text');
     
     if (theme === 'dark') {
-        toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i><span class="our_menu">.</span>';
     } else {
-        toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i><span class="our_menu">.</span>';
     }
 }
 
