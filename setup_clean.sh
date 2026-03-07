@@ -1,0 +1,1 @@
+\rm -rf build djangoui.egg-info dist djangouiapp.egg-info djangoui/__pycache__
