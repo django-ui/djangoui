@@ -1,24 +1,34 @@
+<style>
+.navbar-nav .nav-link {
+    font-family: 'Roboto', sans-serif, ;
+    font-weight: 350;
+    flex-direction: row;
+    font-size: 0.9em;
+    color:  gray;
+}    
+</style>
+
 <a class="navbar-brand" href="/">
     <img src="/static/example_app/imgs/collect.png" width="25vw"> 
 </a>
-<span class="our_menu" style="color: #003478 !important;font-weight: 900; font-size: larger; "> Example App </span>
+<span class="our_menu" style="font-weight: 900; font-size: larger; "> Main App </span>
 <span id="common_status" class="" style="width: 50px; text-align:right; display: hidden; white-space: nowrap; overflow: visible;"></span>
 
 <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
 
 <li class="nav-item mr-4 mb-2 mb-lg-0">
-    <a class="nav-link" href="/example_app/example_app/index.html"  > 
-        <i class="fas fa-info-circle"></i> &nbsp; <span class="our_menu">Example App</span></a>
+    <a class="nav-link" href="/mainapp/mainapp/index.html"  > 
+        <span class="our_menu">App</span></a>
 </li>
         
 <li class="nav-item mr-4 mb-2 mb-lg-0">
-    <a class="nav-link" href="/example_app/example_app/about.html"  > 
-        <i class="fas fa-info-circle"></i> &nbsp; <span class="our_menu">About</span></a>
+    <a class="nav-link" href="/mainapp/feedback/?from={{ request.build_absolute_uri }}" target="feedback_tab"> 
+        <span class="our_menu">Feedback</span></a>
 </li>
     
 <li class="nav-item mr-4 mb-2 mb-lg-0">
-    <a class="nav-link" href="/example_app/info/"  > 
-        <i class="fas fa-moon"></i><i class="fas fa-bolt"></i> <span class="our_menu">info</span></a>
+    <a class="nav-link" href="/mainapp/info/"  > 
+        <span class="our_menu">info</span></a>
 </li>
  
 
@@ -38,9 +48,9 @@ function updateThemeDisplay() {
     const toggleText = document.getElementById('toggle-text');
     
     if (theme === 'dark') {
-        toggleBtn.innerHTML = '<i class="fas fa-sun"></i><span class="our_menu">.</span>';
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i><span >.</span>';
     } else {
-        toggleBtn.innerHTML = '<i class="fas fa-moon"></i><span class="our_menu">.</span>';
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i><span">.</span>';
     }
 }
 

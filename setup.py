@@ -14,6 +14,11 @@ setup(name='djangouiapp',
       package_data={'djangoui':['*', 'djangoui/*', 'djangoui/**/*' ]},
       zip_safe=False,
       install_requires=['django'],
+      entry_points={
+        "console_scripts": [
+            "djangouiapp=djangoui.cli:main",
+        ],
+      },
       classifiers=[
           # How mature is this project? Common values are
           #   3 - Alpha

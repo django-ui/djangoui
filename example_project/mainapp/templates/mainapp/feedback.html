@@ -1,0 +1,657 @@
+{% extends "common.html" %}
+{% block content %}
+<!-- -----------------------------------------------------------------------------
+    STYLE
+------------------------------------------------------------------------------- -->
+<style>
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.feedback-page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+    overflow: hidden;
+}
+
+.feedback-form-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.feedback-form-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+.feedback-container {
+    border: 1px solid lightgray;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 8px;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+    font-size: 13px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+textarea.form-control {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.rich-text-editor {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 200px;
+    resize: vertical;
+    background-color: inherit;
+}
+
+.rich-text-editor:focus {
+    outline: 2px solid #007bff;
+    outline-offset: -2px;
+}
+
+.rich-text-editor .img-wrapper {
+    display: inline-block;
+    resize: both;
+    overflow: auto;
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    border: 2px solid #007bff;
+    border-radius: 4px;
+    cursor: nwse-resize;
+    min-width: 50px;
+    min-height: 50px;
+    max-width: 500px;
+    max-height: 500px;
+}
+
+.rich-text-editor .img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+}
+
+.rich-text-editor .img-wrapper:hover::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+    max-width: 80vw;
+    max-height: 80vh;
+    background-image: var(--hover-img);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 3px solid #007bff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.img-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 80vw;
+    max-height: 80vh;
+    z-index: 10000;
+    border: 3px solid #007bff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    padding: 5px;
+}
+
+.img-popup img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+.toolbar {
+    display: flex;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+}
+
+.toolbar button {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.toolbar button:hover {
+    bbackground-color: #e9ecef;
+}
+
+.toolbar button.active {
+    color: white;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-col-50 {
+    flex: 1;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.header-text {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.file-upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-upload-area:hover {
+    border-color: #007bff;
+    bbackground-color: #f0f8ff;
+}
+
+.file-upload-area.drag-over {
+    border-color: #007bff;
+    bbackground-color: #e7f3ff;
+}
+
+.preview-container {
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    bbackground-color: #fff;
+}
+
+.file-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    margin: 3px;
+    border-radius: 4px;
+    font-size: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.file-item-name {
+    flex: 1;
+    margin-left: 10px;
+}
+
+.file-item-remove {
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.screenshot-preview {
+    max-width: 200px;
+    max-height: 150px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.preview-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.btn-submit {
+    color: inherit;
+    background-color: inherit;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-submit:hover {
+    background-color: gray;
+}
+
+.form-control{
+  background-color: inherit;
+  color: inherit;
+}
+
+
+.url-display {
+    padding: 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    word-break: break-all;
+    font-size: 12px;
+}
+
+.url-display a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.url-display a:hover {
+    text-decoration: underline;
+}
+</style>
+
+<!-- -----------------------------------------------------------------------------
+    HTML
+------------------------------------------------------------------------------- -->
+<div class="feedback-page-wrapper">
+<div class="container" style="padding: 0; max-width: 100%; width: 1024px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <div class="header-row">
+        <h1 style="margin: 0;">&nbsp; Feedback</h1>
+        <p class="header-text">We value your feedback! Please share your thoughts, report issues, or suggest improvements.</p>
+    </div>
+    <hr style="margin: 10px 0;"/>
+    
+    <form id="feedbackForm" method="post" enctype="multipart/form-data" class="feedback-form-wrapper">
+        {% csrf_token %}
+        <input type="hidden" name="useremail" id="useremail" value="{{ user.email }}">
+        <input type="hidden" name="username" id="username" value="{{ user.username }}">
+        
+        <div class="feedback-container">
+            <!-- Current URL -->
+            <div class="form-group">
+                <label class="form-label">Current Page URL:</label>
+                <div class="url-display" id="currentUrl"></div>
+            </div>
+            
+            <!-- Feedback Type and Subject in one row -->
+            <div class="form-row">
+                <div style="flex: 0 0 30%;">
+                    <label class="form-label">Feedback Type:</label>
+                    <select name="feedback_type" id="feedbackType" class="form-control">
+                        <option value="bug">Bug Report</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="improvement">Improvement</option>
+                        <option value="general">General Feedback</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Subject:</label>
+                    <input type="text" name="subject" id="subject" class="form-control" 
+                           placeholder="Brief description" required>
+                </div>
+            </div>
+            
+            <!-- Feedback Message with Rich Text Editor -->
+            <div class="form-group feedback-form-content">
+                <label class="form-label">Your Feedback (paste images directly here):</label>
+                <div class="toolbar">
+                    <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
+                    <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
+                    <button type="button" onclick="formatText('underline')" title="Underline"><u>U</u></button>
+                    <button type="button" onclick="formatText('insertUnorderedList')" title="Bullet List">• List</button>
+                    <button type="button" onclick="formatText('insertOrderedList')" title="Numbered List">1. List</button>
+                </div>
+                <div contenteditable="true" id="richTextEditor" class="rich-text-editor form-control" 
+                     data-placeholder="Type your feedback here... You can paste images directly!"></div>
+                <input type="hidden" name="message" id="message">
+            </div>
+            
+            <!-- File Upload Area -->
+            <div class="form-group">
+                <label class="form-label">Attachments (Screenshots, Documents):</label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" name="files" id="fileInput" multiple 
+                           accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #ccc;"></i>
+                    <p style="margin: 5px 0; font-size: 12px;">Click or drag files here</p>
+                    <p style="font-size: 11px; color: #666; margin: 0;">
+                        Images, PDF, DOC, TXT
+                    </p>
+                </div>
+                <div id="previewContainer" class="preview-container">
+                    <strong style="font-size: 12px;">Selected Files:</strong>
+                    <div id="fileList" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;"></div>
+                </div>
+            </div>
+            
+            
+            <!-- Submit Button -->
+            <div class="form-group" style="text-align: center; margin-top: 15px;">
+                <button type="button" class="btn-submit" onclick="handleFeedbackSubmit()">
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+            </div>
+        </div>
+    </form>
+    
+</div>
+</div>
+
+<!-- -----------------------------------------------------------------------------
+    JAVASCRIPT
+------------------------------------------------------------------------------- -->
+<script>
+// Capture and display current URL
+const urlParams = new URLSearchParams(window.location.search);
+const referrerUrl = urlParams.get('from') || document.referrer || window.location.href;
+
+const urlDisplay = document.getElementById('currentUrl');
+const urlLink = document.createElement('a');
+urlLink.href = referrerUrl;
+urlLink.target = '_blank';
+urlLink.textContent = referrerUrl;
+urlDisplay.appendChild(urlLink);
+
+// Rich text editor functionality
+const richTextEditor = document.getElementById('richTextEditor');
+
+// Format text function
+function formatText(command) {
+    document.execCommand(command, false, null);
+    richTextEditor.focus();
+}
+
+// Handle paste in rich text editor
+richTextEditor.addEventListener('paste', (e) => {
+    const items = e.clipboardData.items;
+    
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                // Create wrapper div for resizing
+                const wrapper = document.createElement('div');
+                wrapper.className = 'img-wrapper';
+                wrapper.contentEditable = false;
+                
+                // Create img element
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.draggable = false;
+                
+                // Append img to wrapper
+                wrapper.appendChild(img);
+                
+                // Add hover popup functionality
+                wrapper.addEventListener('mouseenter', function() {
+                    showImagePopup(img.src);
+                });
+                
+                wrapper.addEventListener('mouseleave', function() {
+                    hideImagePopup();
+                });
+                
+                // Insert at cursor position
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(wrapper);
+                    
+                    // Add space after image
+                    const space = document.createTextNode('\u00A0');
+                    range.insertNode(space);
+                    range.setStartAfter(space);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+                
+                // Also add to file list
+                const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+                selectedFiles.push(file);
+                displayFiles();
+            };
+            reader.readAsDataURL(blob);
+            return;
+        }
+    }
+});
+
+// Placeholder handling for rich text editor
+richTextEditor.addEventListener('focus', function() {
+    if (this.textContent.trim() === '') {
+        this.classList.add('focused');
+    }
+});
+
+richTextEditor.addEventListener('blur', function() {
+    if (this.textContent.trim() === '') {
+        this.classList.remove('focused');
+    }
+});
+
+// Image popup functionality
+let imagePopup = null;
+
+function showImagePopup(imgSrc) {
+    // Create popup if it doesn't exist
+    if (!imagePopup) {
+        imagePopup = document.createElement('div');
+        imagePopup.className = 'img-popup';
+        imagePopup.innerHTML = '<img src="" />';
+        document.body.appendChild(imagePopup);
+    }
+    
+    // Set image source and show
+    imagePopup.querySelector('img').src = imgSrc;
+    imagePopup.style.display = 'block';
+}
+
+function hideImagePopup() {
+    if (imagePopup) {
+        imagePopup.style.display = 'none';
+    }
+}
+
+// File upload handling
+const fileUploadArea = document.getElementById('fileUploadArea');
+const fileInput = document.getElementById('fileInput');
+const previewContainer = document.getElementById('previewContainer');
+const fileList = document.getElementById('fileList');
+const screenshotPreview = document.getElementById('screenshotPreview');
+
+let selectedFiles = [];
+
+// Click to upload
+fileUploadArea.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+});
+
+// File selection
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files, true);
+});
+
+// Drag and drop
+fileUploadArea.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileUploadArea.classList.add('drag-over');
+});
+
+fileUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileUploadArea.classList.add('drag-over');
+});
+
+fileUploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only remove if leaving the upload area itself
+    if (e.target === fileUploadArea) {
+        fileUploadArea.classList.remove('drag-over');
+    }
+});
+
+fileUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileUploadArea.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files, true);
+});
+
+// Prevent default drag behavior on document
+document.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+});
+
+document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+
+document.addEventListener('drop', (e) => {
+    e.preventDefault();
+});
+
+// Handle files
+function handleFiles(files, replace = false) {
+    if (replace) {
+        selectedFiles = Array.from(files);
+    } else {
+        selectedFiles = selectedFiles.concat(Array.from(files));
+    }
+    displayFiles();
+}
+
+// Display selected files
+function displayFiles() {
+    fileList.innerHTML = '';
+    
+    selectedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+            <i class="fas fa-file" style="margin-right: 5px;"></i>
+            <span class="file-item-name">${file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name} (${formatFileSize(file.size)})</span>
+            <span class="file-item-remove" onclick="removeFile(${index})" style="margin-left: 8px;">✕</span>
+        `;
+        fileList.appendChild(fileItem);
+    });
+}
+
+// Remove file
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    displayFiles();
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+
+// Callback function for feedback submission
+function handleFeedbackSubmitCB(responseTxt, statusTxt, xhr, context, formData) {
+    try {
+        const result = JSON.parse(responseTxt);
+        
+        if (result.status === 'success') {
+            salert( 
+                '<div style="padding: 15px; background-color: #d4edda; color: #155724; border-radius: 4px;">' +
+                '<strong>Success!</strong> Your feedback has been submitted. Thank you!' +
+                '</div>');
+            
+            // Reset form
+            document.getElementById('feedbackForm').reset();
+            richTextEditor.innerHTML = '';
+            selectedFiles = [];
+            displayFiles();
+        } else {
+            throw new Error(result.message || 'Submission failed');
+        }
+    } catch (error) {
+        salert( 
+            '<div style="padding: 15px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">' +
+            '<strong>Error!</strong> ' + error.message +
+            '</div>');
+    }
+}
+
+// Form submission handler
+function handleFeedbackSubmit() {
+    // Get rich text content and set it to hidden field
+    const richTextContent = richTextEditor.innerHTML;
+    document.getElementById('message').value = richTextContent;
+    console.log("handleFeedbackSubmit")
+    // Add URL to context
+    const ctx = { url: referrerUrl };
+    
+    // Call the web service using callws pattern
+    callws('/mainapp/submit_feedback/', 'feedbackForm', handleFeedbackSubmitCB, ctx);
+}
+
+// Attach to form submit
+document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleFeedbackSubmit();
+});
+</script>
+{% endblock %}

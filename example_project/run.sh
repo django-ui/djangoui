@@ -1,5 +1,6 @@
 PORT=8000
-python manage.py runserver 0:$PORT
+python -m djangoui.manage migrate
+python -m djangoui.manage runserver 0:$PORT
 
 #=> uvrun:
 #uv run python manage.py runserver 0:${PORT}

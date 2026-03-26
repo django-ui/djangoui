@@ -7,13 +7,13 @@
 <link rel="icon" type="image/png" href="/static/imgs/fav.png/" />
 <link href='/static/css/googlefont.css/' rel='stylesheet' type='text/css'>
 <link href='/static/css/googlefontsans.css/' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="/static/css/styles.css/">
 <link rel="stylesheet" type="text/css" href="/static/css/geoui.css/">
 <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css/">
 <link rel="stylesheet" type="text/css" href="/static/bower_components/Font-Awesome/css/all.min.css/">
 <link rel="stylesheet" type="text/css" href="/static/bower_components/jquery-ui/themes/base/jquery-ui.css/">
 <script src="/static/bower_components/jquery-ui/jquery-ui.js/"></script>
 <script src="/static/bower_components/jquery-form/src/jquery.form.js/"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/styles.css/">
 
 <!-- Global site tag (gtag.js) - Google Analytics 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-34483841-1/"></script>
@@ -167,7 +167,7 @@ input{
     height: 40px;
     padding: 3 0 3 3;
     font-size: small;
-    background: #fefefe;
+    background: inherit;
 }
 .input1:disabled{
     background: #ececec;
@@ -182,7 +182,7 @@ input{
     height: 40px;
     padding: 3 0 3 3;
     font-size: small;
-    background: #fefefe;
+    background: inherit;
 }
 .input11:disabled{
     background: #ececec;
@@ -197,7 +197,7 @@ input{
     font-size: smaller;
     position: relative;
     top: 12;
-    background: #ffffff;
+    background: inherit;
     padding: 2 10 2 10;
     left: 10;
     border-radius: 4px;;
@@ -282,9 +282,6 @@ td {
     font-family: sans-serif, 'Roboto';
     font-weight: 400;
     flex-direction: row;
-}
-.navbar a {
-    color: #003478 !important;
 }
 .navbar-nav{
     flex-direction: unset !important;
@@ -439,17 +436,17 @@ code::after, code::before {
 {% if entire_top_url %}
     {% include entire_top_url %}    
 {% else %}
-    <nav id=mainnavbar class="navbar navbar-expand-sm navbar-light bg-light"
-    style="border-bottom: 1px solid #eee; height: 48px; background-color: aliceblue;display: -webkit-box1">
+    <nav id=mainnavbar class="navbar navbar-expand-sm "
+    style="border-bottom: 1px solid #eee; height: 48px;display: -webkit-box1">
     {% if top_url %}
         {% include top_url %}    
     {% else %}
         <a class="navbar-brand" href="/">
             <img src="/static/imgs/logo5.png" height=28 alt="logo"/ >
             {% if appname %}
-                <span class="our_menu" style="color: #003478 !important;font-weight: 600; font-size: small;"> {{ appname }} </span>
+                <span class="our_menu" style="font-weight: 600; font-size: small;"> {{ appname }} </span>
             {% else %}
-                <span class="our_menu" style="color: #003478 !important;font-weight: 600; font-size: small;"> EXAMPLE-1 </span>
+                <span class="our_menu" style="font-weight: 600; font-size: small;"> EXAMPLE-1 </span>
             {% endif %}
     
         <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
