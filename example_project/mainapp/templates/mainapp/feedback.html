@@ -13,7 +13,7 @@ body, html {
 .feedback-page-wrapper {
     display: flex;
     flex-direction: column;
-    height: 95vh;
+    min-height: 95vh;
     overflow: hidden;
 }
 
@@ -301,12 +301,15 @@ textarea.form-control {
     HTML
 ------------------------------------------------------------------------------- -->
 <div class="feedback-page-wrapper">
-<div class="container" style="padding: 0; max-width: 100%; width: 1024px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+<div class="container" style="padding: 0; max-width: 100%; width: 900px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+
+    <br/>
+    <br/>
     <div class="header-row">
         <h1 style="margin: 0;">&nbsp; Feedback</h1>
         <p class="header-text">We value your feedback! Please share your thoughts, report issues, or suggest improvements.</p>
     </div>
-    <hr style="margin: 10px 0;"/>
+    <br/>
     
     <form id="feedbackForm" method="post" enctype="multipart/form-data" class="feedback-form-wrapper">
         {% csrf_token %}
@@ -315,11 +318,13 @@ textarea.form-control {
         
         <div class="feedback-container">
             <!-- Current URL -->
+             <br/>
             <div class="form-group">
-                <label class="form-label">Current Page URL:</label>
-                <div class="url-display" id="currentUrl"></div>
+                
+                <b> Feedback URL:</b> <span class="url-display" id="currentUrl"></span>
             </div>
-            
+            <br/>
+            <br/>
             <!-- Feedback Type and Subject in one row -->
             <div class="form-row">
                 <div style="flex: 0 0 30%;">
@@ -338,6 +343,7 @@ textarea.form-control {
                 </div>
             </div>
             
+            <br/>
             <!-- Feedback Message with Rich Text Editor -->
             <div class="form-group feedback-form-content">
                 <label class="form-label">Your Feedback (paste images directly here):</label>
@@ -374,7 +380,7 @@ textarea.form-control {
             
             <!-- Submit Button -->
             <div class="form-group" style="text-align: center; margin-top: 15px;">
-                <button type="button" class="btn-submit" onclick="handleFeedbackSubmit()">
+                <button type="button" class="btn btn-primary" onclick="handleFeedbackSubmit()">
                     <i class="fas fa-paper-plane"></i> Submit Feedback
                 </button>
             </div>
