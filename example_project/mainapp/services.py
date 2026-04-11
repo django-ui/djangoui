@@ -5,11 +5,14 @@
 import os
 from  mangorest.mango import webapi
 #--------------------------------------------------------------------------------------------------------    
-@webapi("/app1/test")
-def test( request,  **kwargs):
+@webapi("/app1/test", d="", doc1="Test endpoint", dob="1/1/2026", version="1.5")
+def test( request, param1="AA", param2="BB", **kwargs):
+    '''
+    Test endpoint - it does not do much
+    '''
     return "APP 1 TEST version 1.0"
 #--------------------------------------------------------------------------------------------------------    
-@webapi("/app1/uploadfile")
+@webapi("/app1/uploadfile", files=True)
 def uploadfile( request,  **kwargs):
     par = dict(request.GET)
     par.update(request.POST)
@@ -32,7 +35,7 @@ def uploadfile( request,  **kwargs):
     print(" Retuning ", ret )
     return ret
 #--------------------------------------------------------------------------------------------------------    
-@webapi("/app1/processfile")
+@webapi("/app1/processfile", auth=True, mcp=True)
 def processfile( request, **kwargs):
     print("processing file: ", kwargs)
 
