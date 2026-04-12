@@ -399,11 +399,15 @@ const urlParams = new URLSearchParams(window.location.search);
 const referrerUrl = urlParams.get('from') || document.referrer || window.location.href;
 
 const urlDisplay = document.getElementById('currentUrl');
-const urlLink = document.createElement('a');
-urlLink.href = referrerUrl;
-urlLink.target = '_blank';
-urlLink.textContent = referrerUrl;
-urlDisplay.appendChild(urlLink);
+if (referrerUrl.includes('/feedback/') || referrerUrl.includes('/feedback?')) {
+    urlDisplay.textContent = 'Feedback about feedback';
+} else {
+    const urlLink = document.createElement('a');
+    urlLink.href = referrerUrl;
+    urlLink.target = '_blank';
+    urlLink.textContent = referrerUrl;
+    urlDisplay.appendChild(urlLink);
+}
 
 // Rich text editor functionality
 const richTextEditor = document.getElementById('richTextEditor');
