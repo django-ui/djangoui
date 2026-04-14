@@ -33,7 +33,7 @@ def appcontext(request):
     context = {
         "appname"           : "My Application Name",
         "weburl"            : "https://myurl.forexample.com/",
-        "top_url"           : "example_app/topbar.html",
+        "top_url"           : "mainapp/topbar.html",
         #"entire_top_url"   : "mainapp/topbar.html",   # If you want the entire top URL replaced
         "NO_LOGIN_MENU"     : 0,                            # 1: to show login menu in topbar right corner
         "APP_MENU"          : 0,                            # 1: show applications menu in top bar
@@ -45,4 +45,5 @@ def appcontext(request):
 
     return context
 #---------------------------------------------------------------------------------
-INCLUDE_APPS = ["example_app"]
+DEBUG=True
+INCLUDE_APPS = ["mainapp"]
