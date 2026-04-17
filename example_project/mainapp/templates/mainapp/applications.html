@@ -1,0 +1,234 @@
+{% extends "common.html" %}
+{% block content %}
+<style>
+:root {
+    --ap-bg: #f5f5f7;
+    --ap-surface: #ffffff;
+    --ap-text: #1d1d1f;
+    --ap-muted: #6e6e73;
+    --ap-border: #d2d2d7;
+    --ap-accent: #0071e3;
+    --ap-radius: 18px;
+    --ap-radius-sm: 12px;
+}
+html[data-theme="dark"] {
+    --ap-bg: #0f172a;
+    --ap-surface: #111827;
+    --ap-text: #e5e7eb;
+    --ap-muted: #9ca3af;
+    --ap-border: #374151;
+    --ap-accent: #60a5fa;
+}
+body { background: var(--ap-bg) !important; }
+
+/* Hero */
+.ap-hero {
+    text-align: center;
+    padding: 64px 24px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.ap-hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ap-text);
+    margin: 0 0 12px;
+    line-height: 1.1;
+}
+.ap-hero p {
+    font-size: 19px;
+    color: var(--ap-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Error banner */
+.ap-error {
+    max-width: 900px;
+    margin: 0 auto 24px;
+    padding: 14px 20px;
+    background: #fff1f2;
+    color: #9f1239;
+    border-radius: var(--ap-radius-sm);
+    font-size: 14px;
+}
+html[data-theme="dark"] .ap-error { background: #450a0a; color: #fca5a5; }
+
+/* Grid */
+.ap-grid {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Cards */
+.ap-card {
+    background: var(--ap-surface);
+    border-radius: var(--ap-radius);
+    padding: 32px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    min-height: 220px;
+}
+.ap-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 36px rgba(0,0,0,0.09);
+    text-decoration: none;
+    color: inherit;
+}
+html[data-theme="dark"] .ap-card:hover {
+    box-shadow: 0 10px 36px rgba(0,0,0,0.4);
+}
+
+/* Icon circle */
+.ap-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+}
+.ap-card-icon svg { width: 24px; height: 24px; color: #fff; }
+
+/* Badge */
+.ap-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 980px;
+    background: var(--ap-bg);
+    color: var(--ap-muted);
+    border: 1px solid var(--ap-border);
+}
+
+/* Text */
+.ap-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ap-text);
+    margin: 0 0 8px;
+}
+.ap-card p {
+    font-size: 14px;
+    color: var(--ap-muted);
+    line-height: 1.55;
+    margin: 0;
+    flex: 1;
+}
+.ap-card-footer {
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ap-accent);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.ap-card-footer svg { width: 13px; height: 13px; }
+
+/* No apps */
+.ap-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--ap-muted);
+    font-size: 15px;
+    padding: 60px 0;
+}
+
+@media (max-width: 600px) {
+    .ap-hero h1 { font-size: 32px; }
+    .ap-hero p  { font-size: 16px; }
+    .ap-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- Hero -->
+<div class="ap-hero">
+    <h1>Applications</h1>
+    <p>Browse and launch available platform applications.</p>
+</div>
+
+<!-- Error -->
+{% if error %}
+<div class="ap-error">{{ error }}</div>
+{% endif %}
+
+<!-- App grid -->
+<div class="ap-grid">
+{% if apps %}
+    {% for app in apps %}
+    {% if app.url|slice:":1" == "#" %}
+    <div class="ap-card" style="cursor:pointer" title="{{ app.title }}"
+         onclick="var t=document.getElementById('chat-widget-toggle'); if(t) t.click();">
+    {% else %}
+    <a class="ap-card" href="/mainapp/app_launch/?app={{ app.name }}" title="{{ app.title }}">
+    {% endif %}
+
+        {% if app.badge %}
+        <span class="ap-badge">{{ app.badge }}</span>
+        {% endif %}
+
+        <div class="ap-card-icon" style="background: {{ app.color }};">
+            {% if app.icon == 'home' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <path d="M9 21V12h6v9"/>
+            </svg>
+            {% elif app.icon == 'graph' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="5" cy="12" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                <line x1="7" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="17" y2="12"/>
+                <line x1="12" y1="7" x2="12" y2="10"/><line x1="12" y1="14" x2="12" y2="17"/>
+            </svg>
+            {% elif app.icon == 'chat' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {% elif app.icon == 'grid' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+            {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path d="M9 12h6M12 9v6"/>
+            </svg>
+            {% endif %}
+        </div>
+
+        <h3>{{ app.title }}</h3>
+        <p>{{ app.description }}</p>
+
+        <div class="ap-card-footer">
+            {% if app.url|slice:":1" == "#" %}Open chat{% else %}Open{% endif %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+    {% if app.url|slice:":1" == "#" %}</div>{% else %}</a>{% endif %}
+    {% endfor %}
+{% else %}
+    <div class="ap-empty">No applications configured. Add app names to <code>INCLUDE_APPS</code> in <code>my_config.py</code>.</div>
+{% endif %}
+</div>
+
+{% include "mainapp/footer.html" %}
+{% endblock %}
