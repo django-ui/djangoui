@@ -1,75 +1,105 @@
 <style>
-#footer a {
-    color: #bdbdbd;
+/* Sticky footer: push to bottom when page is shorter than viewport,
+   sit naturally after content otherwise. */
+.pagecontent {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 70px); /* subtract approx navbar height */
 }
+.af-footer {
+    margin-top: auto; /* expands gap above footer when page is short */
+    border-top: 1px solid #d2d2d7;
+    background: #f5f5f7;
+    padding: 40px 20px 24px;
+}
+html[data-theme="dark"] .af-footer {
+    background: #111827;
+    border-top-color: #374151;
+}
+.af-footer-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 32px 24px;
+}
+.af-footer-col h6 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1d1d1f;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 12px;
+}
+html[data-theme="dark"] .af-footer-col h6 { color: #e5e7eb; }
+.af-footer-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.af-footer-col ul li a {
+    font-size: 13px;
+    color: #6e6e73;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+html[data-theme="dark"] .af-footer-col ul li a { color: #9ca3af; }
+.af-footer-col ul li a:hover { color: #0071e3; }
+html[data-theme="dark"] .af-footer-col ul li a:hover { color: #60a5fa; }
+.af-footer-bottom {
+    max-width: 900px;
+    margin: 28px auto 0;
+    padding-top: 16px;
+    border-top: 1px solid #d2d2d7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+html[data-theme="dark"] .af-footer-bottom { border-top-color: #374151; }
+.af-footer-bottom span {
+    font-size: 12px;
+    color: #6e6e73;
+}
+html[data-theme="dark"] .af-footer-bottom span { color: #9ca3af; }
 </style>
-<footer id="footer" class="our_menu1" style="background: #3c4043 !important;position: relative; bottom:0; width:100%;z-index:6; ">
-    <br/>
-    <div class="container" >
-        <div class="row">
 
-            <div class="col-md-3">
-                <div class="widget1">
-                    <h5 class="widgetheading">Our Contact</h5>
-                    <address>Phone (303) 456-7890 </address>
-                        <i class="icon-phone"></i> <br>
-                        <i class="icon-envelope-alt"></i> info@LockheedMartin.com
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="widget">
-                    <h5 class="widgetheading">Quick Links</h5>
-                    <ul class="link-list">
-                        <li><a href="/mainapp/feedback/">Contact us</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="widget">
-                    <h5 class="widgetheading">Latest posts</h5>
-                    <ul class="link-list">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="https://www.lockheedmartin.com/en-us/careers">Career</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="widget">
-                    <h5 class="widgetheading">Recent News</h5>
-                    <ul class="link-list">
-                        <li><a target="new" href="https://www.lockheedmartin.com/en-us/news.html">News</a></li>
-                        <li><a target="new" href="/apis/doc/">API Docs</a></li>
-                    </ul>
-                </div>
-            </div>
+<footer class="af-footer" id="footer">
+    <div class="af-footer-inner">
+        <div class="af-footer-col">
+            <h6>Contact</h6>
+            <ul>
+                <li><a href="/mainapp/feedback/">Send feedback</a></li>
+                <li><a href="mailto:info@LockheedMartin.com">info@LockheedMartin.com</a></li>
+            </ul>
+        </div>
+        <div class="af-footer-col">
+            <h6>Quick links</h6>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/mainapp/feedback/">Feedback</a></li>
+            </ul>
+        </div>
+        <div class="af-footer-col">
+            <h6>Resources</h6>
+            <ul>
+                <li><a href="https://www.lockheedmartin.com/en-us/careers" target="_blank">Careers</a></li>
+                <li><a href="/apis/doc/" target="_blank">API Docs</a></li>
+            </ul>
+        </div>
+        <div class="af-footer-col">
+            <h6>News</h6>
+            <ul>
+                <li><a href="/mainapp/mainapp/info.html/" >Dev info page :)</a></li>
+            </ul>
         </div>
     </div>
-    <div id="sub-footer" style="background: #5c5c5c !important">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="copyright">
-                            <span>&copy; All right reserved.</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="af-footer-bottom">
+        <span>&copy; {% now "Y" %} Lockheed Martin. All rights reserved.</span>
+        <span>AI Foundry Platform</span>
     </div>
 </footer>
-
-
-<script>
-function footerPosition(){
-    //if ( $(document).height() < $(window).height() )
-    //    $('#footer').css('position', 'absolute')
-    //var ft = $('#footer').position().top + $('#footer').height()
-    //if ( $('#pagecontent').height() + 150 > $(window).height() ){
-    if ( (document.body.clientHeight ) < $(window).height() ){
-        $('#footer').css('position', 'fixed')
-    }else{
-        $('#footer').css('position', 'relative')
-    }
-
-}
-$( document ).ready(footerPosition);
-</script>

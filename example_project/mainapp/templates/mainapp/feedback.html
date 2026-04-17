@@ -1,393 +1,302 @@
 {% extends "common.html" %}
 {% block content %}
-<!-- -----------------------------------------------------------------------------
-    STYLE
-------------------------------------------------------------------------------- -->
 <style>
-body, html {
-    height: 100%;
+:root {
+    --fb-bg: #f5f5f7;
+    --fb-surface: #ffffff;
+    --fb-text: #1d1d1f;
+    --fb-muted: #6e6e73;
+    --fb-border: #d2d2d7;
+    --fb-accent: #0071e3;
+    --fb-accent-hover: #0077ed;
+    --fb-radius: 18px;
+    --fb-radius-sm: 10px;
+    --fb-danger: #ff3b30;
+}
+html[data-theme="dark"] {
+    --fb-bg: #0f172a;
+    --fb-surface: #111827;
+    --fb-text: #e5e7eb;
+    --fb-muted: #9ca3af;
+    --fb-border: #374151;
+    --fb-accent: #60a5fa;
+    --fb-accent-hover: #93c5fd;
+    --fb-danger: #f87171;
+}
+body { background: var(--fb-bg) !important; }
+.pagecontent { background: var(--fb-bg) !important; max-width: 100% !important; }
+/* Override Bootstrap container constraints */
+.container, .container-fluid { max-width: 100% !important; padding: 0 !important; }
+
+.fb-hero {
+    text-align: center;
+    padding: 56px 24px 36px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+.fb-hero h1 {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--fb-text);
+    margin: 0 0 10px;
+    line-height: 1.1;
+}
+.fb-hero p {
+    font-size: 17px;
+    color: var(--fb-muted);
     margin: 0;
-    overflow: hidden;
+    line-height: 1.5;
 }
 
-.feedback-page-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 95vh;
-    overflow: hidden;
+.fb-wrap {
+    width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
 }
 
-.feedback-form-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+.fb-card {
+    background: var(--fb-surface);
+    border-radius: var(--fb-radius);
+    padding: 44px 52px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07), 0 0 0 1px var(--fb-border);
+}
+html[data-theme="dark"] .fb-card {
+    box-shadow: 0 2px 24px rgba(0,0,0,.35), 0 0 0 1px var(--fb-border);
+}
+@media (max-width: 600px) {
+    .fb-card { padding: 24px 18px; }
+    .fb-hero h1 { font-size: 28px; }
 }
 
-.feedback-form-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
-}
-.feedback-container {
-    border: 1px solid lightgray;
-    border-radius: 6px;
-    padding: 15px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-    width: 100%;
-}
-
-.form-group {
-    margin-bottom: 8px;
-}
-
-.form-label {
-    font-weight: 500;
-    margin-bottom: 4px;
+.fb-field { margin-bottom: 20px; }
+.fb-label {
     display: block;
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fb-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
 }
-
-.form-control {
+.fb-input, .fb-select {
     width: 100%;
-    padding: 6px 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 13px;
+    padding: 11px 15px;
+    border: 1.5px solid var(--fb-border);
+    border-radius: var(--fb-radius-sm);
+    font-size: 15px;
+    color: var(--fb-text);
+    background: var(--fb-bg);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.fb-input:focus, .fb-select:focus {
+    border-color: var(--fb-accent);
+    box-shadow: 0 0 0 3px rgba(0,113,227,.12);
+}
+html[data-theme="dark"] .fb-input:focus,
+html[data-theme="dark"] .fb-select:focus {
+    box-shadow: 0 0 0 3px rgba(96,165,250,.18);
 }
 
-textarea.form-control {
-    min-height: 60px;
-    resize: vertical;
-}
+.fb-row { display: flex; gap: 16px; }
+.fb-row > * { flex: 1; }
+.fb-row > *:first-child { flex: 0 0 38%; }
+@media (max-width: 540px) { .fb-row { flex-direction: column; } .fb-row > *:first-child { flex: unset; } }
 
-.rich-text-editor {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 200px;
-    resize: vertical;
-    background-color: inherit;
-}
-
-.rich-text-editor:focus {
-    outline: 2px solid #007bff;
-    outline-offset: -2px;
-}
-
-.rich-text-editor .img-wrapper {
+.fb-url-badge {
     display: inline-block;
-    resize: both;
-    overflow: auto;
-    width: 100px;
-    height: 100px;
-    margin: 5px;
-    border: 2px solid #007bff;
-    border-radius: 4px;
-    cursor: nwse-resize;
-    min-width: 50px;
-    min-height: 50px;
-    max-width: 500px;
-    max-height: 500px;
-}
-
-.rich-text-editor .img-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    pointer-events: none;
-}
-
-.rich-text-editor .img-wrapper:hover::after {
-    content: '';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: auto;
-    height: auto;
-    max-width: 80vw;
-    max-height: 80vh;
-    background-image: var(--hover-img);
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: 3px solid #007bff;
+    padding: 6px 12px;
+    background: var(--fb-bg);
+    border: 1px solid var(--fb-border);
     border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    z-index: 9999;
-    pointer-events: none;
-}
-
-.img-popup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 80vw;
-    max-height: 80vh;
-    z-index: 10000;
-    border: 3px solid #007bff;
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    padding: 5px;
-}
-
-.img-popup img {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--fb-muted);
+    word-break: break-all;
     max-width: 100%;
-    max-height: 100%;
-    display: block;
 }
+.fb-url-badge a { color: var(--fb-accent); text-decoration: none; }
+.fb-url-badge a:hover { text-decoration: underline; }
 
-.toolbar {
+.fb-toolbar {
     display: flex;
-    gap: 5px;
-    padding: 5px;
-    border: 1px solid #ddd;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--fb-bg);
+    border: 1px solid var(--fb-border);
     border-bottom: none;
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--fb-radius-sm) var(--fb-radius-sm) 0 0;
 }
-
-.toolbar button {
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+.fb-toolbar button {
+    padding: 4px 10px;
+    border: 1px solid var(--fb-border);
+    border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
+    font-weight: 500;
+    background: var(--fb-surface);
+    color: var(--fb-text);
+    transition: background 0.12s, color 0.12s;
+    font-family: inherit;
 }
+.fb-toolbar button:hover { background: var(--fb-accent); color: #fff; border-color: var(--fb-accent); }
 
-.toolbar button:hover {
-    bbackground-color: #e9ecef;
-}
-
-.toolbar button.active {
-    color: white;
-}
-
-.form-row {
-    display: flex;
-    gap: 15px;
-}
-
-.form-col-50 {
-    flex: 1;
-}
-
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.header-text {
+.fb-editor {
+    border: 1px solid var(--fb-border);
+    border-radius: 0 0 var(--fb-radius-sm) var(--fb-radius-sm);
+    padding: 12px 14px;
+    min-height: 180px;
+    max-height: 340px;
+    overflow-y: auto;
     font-size: 14px;
-    color: #666;
-    margin: 0;
+    line-height: 1.6;
+    color: var(--fb-text);
+    background: var(--fb-bg);
+    outline: none;
+    transition: border-color 0.15s;
 }
+.fb-editor:focus { border-color: var(--fb-accent); }
+.fb-editor .img-wrapper {
+    display: inline-block; resize: both; overflow: auto;
+    width: 100px; height: 100px; margin: 5px;
+    border: 2px solid var(--fb-accent); border-radius: 6px;
+    cursor: nwse-resize; min-width: 50px; min-height: 50px;
+    max-width: 500px; max-height: 500px;
+}
+.fb-editor .img-wrapper img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
 
-.file-upload-area {
-    border: 2px dashed #ccc;
-    border-radius: 6px;
-    padding: 15px;
+.fb-drop-zone {
+    border: 2px dashed var(--fb-border);
+    border-radius: var(--fb-radius-sm);
+    padding: 24px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: border-color 0.2s, background 0.2s;
 }
-
-.file-upload-area:hover {
-    border-color: #007bff;
-    bbackground-color: #f0f8ff;
+.fb-drop-zone:hover, .fb-drop-zone.drag-over {
+    border-color: var(--fb-accent);
+    background: rgba(0,113,227,0.04);
 }
+.fb-drop-zone svg { color: var(--fb-muted); margin-bottom: 6px; }
+.fb-drop-zone p { font-size: 13px; color: var(--fb-muted); margin: 4px 0 0; }
 
-.file-upload-area.drag-over {
-    border-color: #007bff;
-    bbackground-color: #e7f3ff;
+.fb-file-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fb-file-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 980px;
+    border: 1px solid var(--fb-border);
+    font-size: 12px; color: var(--fb-text);
+    background: var(--fb-bg);
 }
+.fb-file-chip-remove { color: var(--fb-danger); cursor: pointer; font-weight: 700; font-size: 14px; line-height: 1; }
 
-.preview-container {
-    margin-top: 8px;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    bbackground-color: #fff;
+.fb-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    width: 100%; padding: 13px 24px;
+    border-radius: 980px; border: none;
+    background: var(--fb-accent); color: #fff;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
 }
+.fb-btn:hover { background: var(--fb-accent-hover); }
+.fb-btn svg { width: 16px; height: 16px; }
 
-.file-item {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    margin: 3px;
-    border-radius: 4px;
-    font-size: 12px;
-    border: 1px solid #e0e0e0;
+.fb-divider { border: none; border-top: 1px solid var(--fb-border); margin: 24px 0; }
+
+.img-popup {
+    display: none; position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 80vw; max-height: 80vh; z-index: 10000;
+    border: 2px solid var(--fb-accent); border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35); padding: 4px;
+    background: var(--fb-surface);
 }
-
-.file-item-name {
-    flex: 1;
-    margin-left: 10px;
-}
-
-.file-item-remove {
-    color: #dc3545;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.screenshot-preview {
-    max-width: 200px;
-    max-height: 150px;
-    margin: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.preview-images {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.btn-submit {
-    color: inherit;
-    background-color: inherit;
-    padding: 8px 24px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.btn-submit:hover {
-    background-color: gray;
-}
-
-.form-control{
-  background-color: inherit;
-  color: inherit;
-}
-
-
-.url-display {
-    padding: 8px;
-    border-radius: 4px;
-    font-family: monospace;
-    word-break: break-all;
-    font-size: 12px;
-}
-
-.url-display a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.url-display a:hover {
-    text-decoration: underline;
-}
+.img-popup img { max-width: 100%; max-height: 100%; display: block; border-radius: 8px; }
 </style>
 
-<!-- -----------------------------------------------------------------------------
-    HTML
-------------------------------------------------------------------------------- -->
-<div class="feedback-page-wrapper">
-<div class="container" style="padding: 0; max-width: 100%; width: 900px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+<!-- Hero -->
+<div class="fb-hero">
+    <h1>Share Your Feedback</h1>
+    <p>We read every submission. Help us improve by reporting issues, requesting features, or sharing any thoughts.</p>
+</div>
 
-    <br/>
-    <br/>
-    <div class="header-row">
-        <h1 style="margin: 0;">&nbsp; Feedback</h1>
-        <p class="header-text">We value your feedback! Please share your thoughts, report issues, or suggest improvements.</p>
-    </div>
-    <br/>
-    
-    <form id="feedbackForm" method="post" enctype="multipart/form-data" class="feedback-form-wrapper">
-        {% csrf_token %}
-        <input type="hidden" name="useremail" id="useremail" value="{{ user.email }}">
-        <input type="hidden" name="username" id="username" value="{{ user.username }}">
-        
-        <div class="feedback-container">
-            <!-- Current URL -->
-             <br/>
-            <div class="form-group">
-                
-                <b> Feedback URL:</b> <span class="url-display" id="currentUrl"></span>
+<div class="fb-wrap">
+    <div class="fb-card">
+        <form id="feedbackForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="useremail" id="useremail" value="{{ user.email }}">
+            <input type="hidden" name="username"  id="username"  value="{{ user.username }}">
+            <input type="hidden" name="message"   id="message">
+
+            <!-- Referring URL -->
+            <div class="fb-field">
+                <span class="fb-label">Regarding page</span>
+                <div class="fb-url-badge" id="currentUrl"></div>
             </div>
-            <br/>
-            <br/>
-            <!-- Feedback Type and Subject in one row -->
-            <div class="form-row">
-                <div style="flex: 0 0 30%;">
-                    <label class="form-label">Feedback Type:</label>
-                    <select name="feedback_type" id="feedbackType" class="form-control">
+
+            <hr class="fb-divider">
+
+            <!-- Type + Subject -->
+            <div class="fb-row fb-field">
+                <div>
+                    <label class="fb-label" for="feedbackType">Type</label>
+                    <select name="feedback_type" id="feedbackType" class="fb-select">
                         <option value="bug">Bug Report</option>
                         <option value="feature">Feature Request</option>
                         <option value="improvement">Improvement</option>
                         <option value="general">General Feedback</option>
                     </select>
                 </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Subject:</label>
-                    <input type="text" name="subject" id="subject" class="form-control" 
+                <div>
+                    <label class="fb-label" for="subject">Subject</label>
+                    <input type="text" name="subject" id="subject" class="fb-input"
                            placeholder="Brief description" required>
                 </div>
             </div>
-            
-            <br/>
-            <!-- Feedback Message with Rich Text Editor -->
-            <div class="form-group feedback-form-content">
-                <label class="form-label">Your Feedback (paste images directly here):</label>
-                <div class="toolbar">
-                    <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
-                    <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
-                    <button type="button" onclick="formatText('underline')" title="Underline"><u>U</u></button>
-                    <button type="button" onclick="formatText('insertUnorderedList')" title="Bullet List">• List</button>
-                    <button type="button" onclick="formatText('insertOrderedList')" title="Numbered List">1. List</button>
+
+            <!-- Rich Text Message -->
+            <div class="fb-field">
+                <span class="fb-label">Message &mdash; paste images directly</span>
+                <div class="fb-toolbar">
+                    <button type="button" onclick="formatText('bold')"                title="Bold"><b>B</b></button>
+                    <button type="button" onclick="formatText('italic')"              title="Italic"><i>I</i></button>
+                    <button type="button" onclick="formatText('underline')"           title="Underline"><u>U</u></button>
+                    <button type="button" onclick="formatText('insertUnorderedList')" title="Bullet list">&#8226; List</button>
+                    <button type="button" onclick="formatText('insertOrderedList')"   title="Numbered list">1. List</button>
                 </div>
-                <div contenteditable="true" id="richTextEditor" class="rich-text-editor form-control" 
-                     data-placeholder="Type your feedback here... You can paste images directly!"></div>
-                <input type="hidden" name="message" id="message">
+                <div contenteditable="true" id="richTextEditor" class="fb-editor"
+                     data-placeholder="Type your feedback here..."></div>
             </div>
-            
-            <!-- File Upload Area -->
-            <div class="form-group">
-                <label class="form-label">Attachments (Screenshots, Documents):</label>
-                <div class="file-upload-area" id="fileUploadArea">
-                    <input type="file" name="files" id="fileInput" multiple 
-                           accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #ccc;"></i>
-                    <p style="margin: 5px 0; font-size: 12px;">Click or drag files here</p>
-                    <p style="font-size: 11px; color: #666; margin: 0;">
-                        Images, PDF, DOC, TXT
-                    </p>
+
+            <!-- Attachments -->
+            <div class="fb-field">
+                <span class="fb-label">Attachments</span>
+                <div class="fb-drop-zone" id="fileUploadArea">
+                    <input type="file" name="files" id="fileInput" multiple
+                           accept="image/*,.pdf,.doc,.docx,.txt" style="display:none">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p><strong style="color:var(--fb-text)">Click or drop files here</strong></p>
+                    <p>Images, PDF, DOC, TXT</p>
                 </div>
-                <div id="previewContainer" class="preview-container">
-                    <strong style="font-size: 12px;">Selected Files:</strong>
-                    <div id="fileList" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;"></div>
-                </div>
+                <div class="fb-file-list" id="fileList"></div>
             </div>
-            
-            
-            <!-- Submit Button -->
-            <div class="form-group" style="text-align: center; margin-top: 15px;">
-                <button type="button" class="btn btn-primary" onclick="handleFeedbackSubmit()">
-                    <i class="fas fa-paper-plane"></i> Submit Feedback
-                </button>
-            </div>
-        </div>
-    </form>
-    
-</div>
+
+            <!-- Submit -->
+            <button type="button" class="fb-btn" onclick="handleFeedbackSubmit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Submit Feedback
+            </button>
+        </form>
+    </div>
 </div>
 
 <!-- -----------------------------------------------------------------------------
@@ -517,9 +426,7 @@ function hideImagePopup() {
 // File upload handling
 const fileUploadArea = document.getElementById('fileUploadArea');
 const fileInput = document.getElementById('fileInput');
-const previewContainer = document.getElementById('previewContainer');
 const fileList = document.getElementById('fileList');
-const screenshotPreview = document.getElementById('screenshotPreview');
 
 let selectedFiles = [];
 
@@ -589,16 +496,13 @@ function handleFiles(files, replace = false) {
 // Display selected files
 function displayFiles() {
     fileList.innerHTML = '';
-    
     selectedFiles.forEach((file, index) => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <i class="fas fa-file" style="margin-right: 5px;"></i>
-            <span class="file-item-name">${file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name} (${formatFileSize(file.size)})</span>
-            <span class="file-item-remove" onclick="removeFile(${index})" style="margin-left: 8px;">✕</span>
-        `;
-        fileList.appendChild(fileItem);
+        const chip = document.createElement('div');
+        chip.className = 'fb-file-chip';
+        const name = file.name.length > 28 ? file.name.substring(0, 28) + '\u2026' : file.name;
+        chip.innerHTML = `<span>${name} <span style="opacity:.6">(${formatFileSize(file.size)})</span></span>` +
+            `<span class="fb-file-chip-remove" onclick="removeFile(${index})" title="Remove">&times;</span>`;
+        fileList.appendChild(chip);
     });
 }
 
@@ -624,12 +528,10 @@ function handleFeedbackSubmitCB(responseTxt, statusTxt, xhr, context, formData) 
         const result = JSON.parse(responseTxt);
         
         if (result.status === 'success') {
-            salert( 
-                '<div style="padding: 15px; background-color: #d4edda; color: #155724; border-radius: 4px;">' +
-                '<strong>Success!</strong> Your feedback has been submitted. Thank you!' +
+            salert(
+                '<div style="padding:16px 20px;background:#f0fdf4;color:#166534;border-radius:12px;font-size:14px">' +
+                '<strong>&#10003; Submitted!</strong> Thank you &mdash; your feedback has been received.' +
                 '</div>');
-            
-            // Reset form
             document.getElementById('feedbackForm').reset();
             richTextEditor.innerHTML = '';
             selectedFiles = [];
@@ -638,9 +540,9 @@ function handleFeedbackSubmitCB(responseTxt, statusTxt, xhr, context, formData) 
             throw new Error(result.message || 'Submission failed');
         }
     } catch (error) {
-        salert( 
-            '<div style="padding: 15px; background-color: #f8d7da; color: #721c24; border-radius: 4px;">' +
-            '<strong>Error!</strong> ' + error.message +
+        salert(
+            '<div style="padding:16px 20px;background:#fff1f2;color:#9f1239;border-radius:12px;font-size:14px">' +
+            '<strong>&#9888; Error:</strong> ' + error.message +
             '</div>');
     }
 }
@@ -664,4 +566,6 @@ document.getElementById('feedbackForm').addEventListener('submit', (e) => {
     handleFeedbackSubmit();
 });
 </script>
+
+{% include "mainapp/footer.html" %}
 {% endblock %}

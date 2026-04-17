@@ -1,10 +1,60 @@
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 import json
 import os
+
+# ---------------------------------------------------------------------------
+# App catalog helpers
+# ---------------------------------------------------------------------------
+_ICON_DEFAULTS = {
+    'lmapp':   'home',
+    'ontviz':  'graph',
+    'mainapp': 'grid',
+    'chatapp': 'chat',
+}
+_COLOR_DEFAULTS = {
+    'lmapp':   '#0071e3',
+    'ontviz':  '#7c3aed',
+    'mainapp': '#059669',
+    'chatapp': '#db2777',
+}
+
+def _parse_app_md(app_name):
+    """Read {app}/app.md front-matter (--- key: value ---) and return a dict."""
+    project_root = os.getcwd()
+    md_path = os.path.join(project_root, app_name, 'app.md')
+    meta = {
+        'name':        app_name,
+        'title':       app_name.replace('app', ' App').title().strip(),
+        'description': f'The {app_name} application.',
+        'icon':        _ICON_DEFAULTS.get(app_name, 'app'),
+        'url':         f'/{app_name}/',
+        'color':       _COLOR_DEFAULTS.get(app_name, '#6e6e73'),
+        'badge':       '',
+        'body':        '',
+        'has_md':      False,
+    }
+    if not os.path.exists(md_path):
+        return meta
+    try:
+        with open(md_path, encoding='utf-8') as f:
+            content = f.read()
+        meta['has_md'] = True
+        if content.startswith('---'):
+            parts = content.split('---', 2)
+            if len(parts) >= 2:
+                for line in parts[1].strip().splitlines():
+                    if ':' in line:
+                        k, _, v = line.partition(':')
+                        meta[k.strip().lower()] = v.strip()
+                if len(parts) == 3:
+                    meta['body'] = parts[2].strip()
+    except Exception:
+        pass
+    return meta
 
 def index(request):
     rpaths = [c for c in request.path.split("/") if (c) ];
@@ -85,5 +135,32 @@ def submit_feedback(request ):
         'message': 'Feedback submitted successfully',
         'feedback_id': timestamp
     })
-        
-    
+
+
+_HIDDEN_APPS = {'mainapp'}  # remove from catalog for now
+
+def applications(request):
+    from django.conf import settings
+    include_apps = getattr(settings, 'INCLUDE_APPS', [])
+    apps = [_parse_app_md(a) for a in include_apps if a not in _HIDDEN_APPS]
+    return render(request, 'mainapp/applications.html', {'apps': apps})
+
+
+def app_launch(request):
+    app_name = request.GET.get('app', '').strip()
+    if not app_name:
+        return redirect('/mainapp/applications/')
+    meta = _parse_app_md(app_name)
+    # Permission check — everyone allowed by default.
+    # Replace this block with real ACL logic when needed.
+    has_access = True
+    if not has_access:
+        return render(request, 'mainapp/applications.html', {
+            'apps': [],
+            'error': f'You do not have permission to access {meta["title"]}.',
+        }, status=403)
+    target_url = meta.get('url') or f'/{app_name}/'
+    if target_url.startswith('#'):
+        return redirect(f'/lmapp/#chat')
+    return redirect(target_url)
+

@@ -8,5 +8,6 @@ urlpatterns = [
     path(r'info/',  views.info , name='mainapp urls'),
     path(r'feedback/',  views.feedback , name='feedback'),
     path(r'submit_feedback/',  views.submit_feedback , name='submit_feedback'),
-
+    path(r'applications/',  views.applications , name='applications'),
+    path(r'app_launch/',  views.app_launch , name='app_launch'),
 ]
