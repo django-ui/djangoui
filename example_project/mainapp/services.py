@@ -35,7 +35,7 @@ def uploadfile( request,  **kwargs):
     print(" Retuning ", ret )
     return ret
 #--------------------------------------------------------------------------------------------------------    
-@webapi("/app1/processfile", auth=True, mcp=True)
+@webapi("/app1/processfile", auth=True, mcp=False)
 def processfile( request, **kwargs):
     print("processing file: ", kwargs)
 

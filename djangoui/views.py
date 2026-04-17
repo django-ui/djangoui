@@ -4,6 +4,7 @@ import djangoui, djangoui.utils, logging
 from mangorest import mango
 from pathlib import Path
 from ntpath import basename, dirname
+from django.conf import settings
 
 #------------------------------------------------------------------------------
 logger = logging.getLogger("djangoui")
@@ -14,7 +15,7 @@ def index(request):
 
     if DEFULT_INDEX is None:
         DEFULT_INDEX = "index.html"
-        start_dir = "mainapp/templates"
+        start_dir = f"{settings.DEFAULT_APP}/templates"
         filename = "index.html"
         main_index = [basename(dirname(p)) for p in Path(start_dir).rglob(filename) if p.is_file()]
         if len(main_index) > 0:
@@ -92,8 +93,6 @@ from allauth.account.forms import default_token_generator
 from allauth.account import app_settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse, reverse_lazy
-
-from django.conf import settings
 
 class MyResetPasswordForm(ResetPasswordForm):
     def save(self, request, **kwargs):

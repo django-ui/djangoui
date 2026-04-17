@@ -25,6 +25,8 @@ THIS_BASE_DIR = Path(__file__).resolve(strict=True)  # Where settings.py is loca
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'pr75j7t*r!j=oac!798tazlecdo0%k0rasre@!f_&0u%2(=nty'
 DEFAULT_DOMAIN = "https://www.example.org"
+DEFAULT_APP = "mainapp"
+
 CSRF_TRUSTED_ORIGINS = ['http://*.127.0.0.1', 'http://*.127.0.0.1', 'http://*']
 
 # SECURITY WARNING: don't run with debug turned on in production!
