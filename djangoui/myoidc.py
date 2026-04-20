@@ -2,7 +2,6 @@ from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 import logging, my_config
 from django.shortcuts import redirect
 
-
 class MyOIDCAB(OIDCAuthenticationBackend):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,6 +23,7 @@ class MyOIDCAB(OIDCAuthenticationBackend):
 
     # -----------------------------------------------------------------------
     def _get_userinfo(self, access_token ):
+        import requests
         headers = {
             "Authorization": f"Bearer {access_token}",
             #"Accept": "application/json"
@@ -75,9 +75,11 @@ class MyOIDCAB(OIDCAuthenticationBackend):
         jwt_decoded = self._decode_jwt(access_token)
         member = True
         member = self._verify_group_membership(jwt_decoded)
-        print(f"ACCESS TOKEN: {access_token} {ret} {member}")
-
+        #print(f"myoidc:ACCESS TOKEN: {access_token} {ret} {member}")
+        
         if ( not member):
             return None
+
+        
         return ret
         

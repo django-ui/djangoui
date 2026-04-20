@@ -1,10 +1,13 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 import djangoui, djangoui.utils, logging
 from mangorest import mango
 from pathlib import Path
 from ntpath import basename, dirname
 from django.conf import settings
+import requests
+from datetime import datetime
 
 #------------------------------------------------------------------------------
 logger = logging.getLogger("djangoui")
@@ -139,16 +142,124 @@ allauth.account.views.password_reset = myPasswordResetView.as_view()
 #print( f"===> {allauth.account.views.password_reset}")
 
 # -----------------------------------------------------------------------
+def get_userinfo(access_token ):
+    import requests
+
+    endPoint = settings.OIDC_OP_USER_ENDPOINT
+    if (not endPoint or not access_token):
+        return None
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        #"Accept": "application/json"
+    }
+    response = ""
+    try:
+        response = requests.get(endPoint , headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
+
+        user_data = response.json()
+        #user_groups = user_data.get("groups", []) # Common key, adjust as needed
+            
+        return user_data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching user info: {e} : {response} {response.text}")
+    except ValueError:
+        print("Error decoding JSON response.")
+        
+    return None
+
+# -----------------------------------------------------------------------
+# Session keys used to cache OIDC user info on the Django session.
+# We intentionally do NOT write these onto the Django User model because
+# the built-in User model has no such fields (and `user.groups` is a
+# ManyToMany manager, not a list), so attribute assignments there are
+# silently lost after the request.
+SESSION_USER_INFO       = "oidc_user_info"
+SESSION_AD_GROUPS       = "oidc_ad_groups"
+SESSION_EMPLOYEE_ID     = "oidc_employee_id"
+SESSION_USER_INFO_TS    = "oidc_user_info_ts"  # epoch seconds
+
+
+def _attach_user_info_to_user(user, request):
+    """Copy cached OIDC user info from the session onto `user` for this request.
+
+    This makes code like `request.user.ad_groups` / `request.user.user_info`
+    work for the current request without requiring a custom User model.
+    """
+    if request is None or not hasattr(request, "session"):
+        return
+    user.user_info   = request.session.get(SESSION_USER_INFO)
+    user.ad_groups   = request.session.get(SESSION_AD_GROUPS, [])
+    user.employee_id = request.session.get(SESSION_EMPLOYEE_ID, "")
+
+
+# -----------------------------------------------------------------------
+@csrf_exempt
+def checkUserGroupMembership(request):
+    group = request.GET.get("group", "")
+    if not group:
+        return HttpResponse("OK", status=200)
+
+    # Normalize: lowercase + collapse any double-backslashes (e.g. from
+    # URL-encoded "%5C%5C") down to a single backslash so it matches the
+    # form returned by the OIDC userinfo endpoint (e.g. "us\all.ebs.employees").
+    group = group.lower().replace("\\\\", "\\")
+    u = request.user
+
+    if not u.is_authenticated:
+        return HttpResponse(f"NOT OK {group} - not logged in", status=403)
+
+    ad_groups = request.session.get(SESSION_AD_GROUPS, []) or []
+
+    logger.info(f"Checking group {group} for {u.username}")
+    if group in ad_groups:
+        return HttpResponse(f"OK {u} in {group}", status=200)
+    else:
+        return HttpResponse(f"NOT OK '{u}' not in '{group}'", status=403)
+
+@csrf_exempt
+def getEmployeeId(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("NOT OK - not logged in", status=403)
+    employee_id = request.session.get(SESSION_EMPLOYEE_ID, "")
+    return HttpResponse(f"OK {employee_id}", status=200)
+
+
+@csrf_exempt
+def isInThisGroup(request):
+    u = request.user
+    if not u.is_authenticated:
+        return HttpResponse("NOT OK - not logged in", status=403)
+
+    raw_groups = request.GET.get("groups", "")
+    raw_eids   = request.GET.get("employee_ids", "")
+    if not raw_groups and not raw_eids:
+        return HttpResponse("OK", status=200)
+
+    groups = {g.lower().replace("\\\\", "\\") for g in raw_groups.split(",") if g}
+    eids   = {e for e in raw_eids.split(",") if e}
+
+    user_groups = set(request.session.get(SESSION_AD_GROUPS, []) or [])
+    user_eid    = request.session.get(SESSION_EMPLOYEE_ID, "")
+
+    if (groups & user_groups) or (user_eid and user_eid in eids):
+        return HttpResponse(f"OK {u} in {groups} or {eids}", status=200)
+
+    return HttpResponse(f"NOT OK '{u}' not in '{groups} or {eids}'", status=403)
+
+# -----------------------------------------------------------------------
 from django.contrib.auth.signals import user_logged_in
 def postLoggedIn(sender, user, request, **kwargs):
     if ( not request.path_info.startswith("/oidc/") ):
         return
 
     access_token = request.session.get('oidc_access_token','None check: OIDC_STORE_ACCESS_TOKEN')
+    #logger.info(f"ACCESS TOKEN: {access_token}")
+
     log = (f'''
-        ***In postLoggedIn - OIDC username: {user.username}, 
+        ***In postLoggedIn - OIDC username: {user.username},
         email: {user.email} ***
-        Groups: {user.groups} ***
         request.path: {request.path}
         User: {user}
         {request.GET}
@@ -156,10 +267,36 @@ def postLoggedIn(sender, user, request, **kwargs):
         {sender}
         {kwargs}
         ''')
-    print(log)
-    
-    #jwt = decode_jwt(access_token)
-    #user_info = get_userinfo(access_token)
+    logger.info(log)
+
+    try:
+        interval = getattr(settings, "UPDATE_USER_INFO_INTERVAL", 10 * 60)
+        now_ts   = datetime.now().timestamp()
+        last_ts  = request.session.get(SESSION_USER_INFO_TS, 0) or 0
+        cached   = request.session.get(SESSION_USER_INFO)
+
+        if cached and (now_ts - last_ts) < interval:
+            logger.info(
+                f"Skipping get_userinfo; cached {int(now_ts - last_ts)}s ago "
+                f"(interval={interval}s)"
+            )
+        else:
+            user_info = get_userinfo(access_token) or {}
+            ad_groups = [g.lower() for g in user_info.get("groups", [])]
+
+            # Persist on the session so it survives across requests.
+            request.session[SESSION_USER_INFO]    = user_info
+            request.session[SESSION_AD_GROUPS]    = ad_groups
+            request.session[SESSION_EMPLOYEE_ID]  = user_info.get("employee_id", "").lower()
+            request.session[SESSION_USER_INFO_TS] = now_ts
+            request.session.modified = True
+
+            #logger.info(f"AD Groups: {ad_groups}")
+    except Exception as e:
+        logger.warning(f"Error getting user info: {e}")
+
+    # Attach cached info onto the user object for this request's convenience.
+    _attach_user_info_to_user(user, request)
 
     if ( not user.email.startswith(user.username)):
         print("******** UPDATING USERNAME")

@@ -31,6 +31,10 @@ urlpatterns = [
     path('oidccb/', oidc_callback, name='oidc callback'),
     path(r'uploadfile/', views.uploadfile, name='uploadfile'),
     path(r'contactus/', views.contactus, name='send email'),
+    path(r'checkUserGroupMembership/', views.checkUserGroupMembership, name='check user group membership'),
+    path(r'getEmployeeId/', views.getEmployeeId, name='getEmployeeId'),
+    path(r'isInThisGroup/', views.isInThisGroup, name='isInThisGroup'),
+
 
     path(r'broadcast/', views_channels.broadcast, name='brodcast'),
     path(r'', views.index, name='index'),
