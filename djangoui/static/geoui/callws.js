@@ -170,7 +170,7 @@ if (typeof busy !== 'function') { // if no one defined busy or nbusy - we make i
     }
 }
 
-async function callws( url="/ui/test/", formName="", callbacks=null, context={}, 
+let callws = async function ( url="/ui/test/", formName="", callbacks=null, context={},
                         opts=callws_default_opts) {
     var start    = new Date()
     var getIDS   = false
@@ -250,3 +250,67 @@ async function callws( url="/ui/test/", formName="", callbacks=null, context={},
     });
     return RESPONSE
 }
+
+/*--------------------------------------------------------------------------------
+Async variant: identical to callws(), but injects `_async_call=1` into the
+context so the server-side mangorest layer dispatches the target as a
+background job (returning {job_id} immediately). We then poll
+/jobs/status/?job_id=... at `opts.intervalMs` (default 3000ms) until the
+job reaches a terminal status, invoking the user callback on every poll
+with the same signature StartAsync uses:
+
+    cb(status, message, jobId, snap, context, formData)
+
+If `callbacks` is null, it's fire-and-forget: no polling is performed.
+--------------------------------------------------------------------------------*/
+function _callws_async_sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+let callws_async = function (url = "/ui/test/", formName = "", callbacks = null,
+                             context = {}, opts = callws_default_opts) {
+    context = { ...context, _async_call: 1 };
+    const intervalMs = (opts && opts.intervalMs) || 3000;
+    const timeoutMs  = (opts && opts.timeoutMs)  || 10 * 60_000;
+
+    // Fire-and-forget: caller doesn't want progress, so don't poll.
+    if (!callbacks) {
+        return callws(url, formName, null, context, opts);
+    }
+
+    function fanOut(snap, formData) {
+        const args = [snap.status, snap.message, snap.job_id, snap, context, formData];
+        if (Array.isArray(callbacks)) callbacks.forEach(cb => cb && cb(...args));
+        else                          callbacks(...args);
+    }
+
+    async function pollUntilDone(jobId, formData) {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            const r = await fetch(`/jobs/status/?job_id=${encodeURIComponent(jobId)}`,
+                                  { credentials: 'same-origin' });
+            if (!r.ok) throw new Error(`status HTTP ${r.status}`);
+            const snap = await r.json();
+            fanOut(snap, formData);
+            const st = snap.status || '';
+            if (st.startsWith('done') || st.startsWith('error') || st.startsWith('cancelled')) {
+                return snap;
+            }
+            await _callws_async_sleep(intervalMs);
+        }
+        throw new Error('poll timeout');
+    }
+
+    // /jobs/start (via _async_call) returns {"job_id": "..."}; kick off the
+    // poll loop once we have the id.
+    function lcb(data, status, xhr, ctx, formData) {
+        const parsed = (typeof data === 'string') ? JSON.parse(data) : data;
+        const jobId = parsed && parsed.job_id;
+        if (!jobId) {
+            console.warn('callws_async: no job_id in response', data);
+            return;
+        }
+        pollUntilDone(jobId, formData).catch(e =>
+            console.error('callws_async poll failed:', e));
+    }
+
+    return callws(url, formName, lcb, context, opts);
+};

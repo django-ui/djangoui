@@ -1,0 +1,351 @@
+{% comment %}
+  tasks_status.html — overlay modal that lists background jobs.
+  Include this partial once per page:  {% include "tasks_status.html" %}
+  Open it from anywhere via:            openTasksOverlay();
+  Close via:                            closeTasksOverlay();  (or click backdrop / X)
+{% endcomment %}
+<style>
+  /* Apple-style: soft neutrals, subtle tints, rounded corners, single accent. */
+  #tasksOverlay { display:none; position:fixed; inset:0; z-index:9999;
+      background:rgba(0,0,0,.25); align-items:flex-start; justify-content:center;
+      padding-top:4vh;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  #tasksOverlay.open { display:flex; }
+  #tasksOverlay .panel { background:#fbfbfd; width:min(1620px,80vw); max-height:88vh;
+      overflow:auto; border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.18), 0 1px 0 rgba(0,0,0,.04);
+      padding:18px;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+      color:#1d1d1f; font-size:13px; }
+  #tasksOverlay .bar  { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  #tasksOverlay .bar h5 { margin:0; flex:1; font-weight:600; font-size:15px; letter-spacing:-0.01em; }
+  #tasksOverlay table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+  #tasksOverlay th, #tasksOverlay td { padding:8px 10px; border-bottom:1px solid #ececef;
+      text-align:left; vertical-align:middle; }
+  #tasksOverlay th { background:#f5f5f7; position:sticky; top:0;
+      font-weight:500; color:#6e6e73; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* Soft row tints — barely-there. Color comes from the pill, not the row. */
+  #tasksOverlay tr.st-done     { background:transparent; }
+  #tasksOverlay tr.st-running  { background:rgba(0,122,255,.04); }
+  #tasksOverlay tr.st-queued   { background:rgba(0,122,255,.02); }
+  #tasksOverlay tr.st-error    { background:rgba(255,59,48,.04); }
+  #tasksOverlay tr.st-cancelled{ background:transparent; color:#86868b; }
+
+  /* Status pill: tinted background with matching text color (no white-on-bold). */
+  #tasksOverlay .pill { display:inline-block; padding:2px 9px; border-radius:999px;
+      font-size:11px; font-weight:600; letter-spacing:.01em; }
+  #tasksOverlay .pill.done     { background:rgba(52,199,89,.15);  color:#1f7a3a; }
+  #tasksOverlay .pill.running  { background:rgba(0,122,255,.15);  color:#0a5cd5; }
+  #tasksOverlay .pill.queued   { background:rgba(142,142,147,.18);color:#3a3a3c; }
+  #tasksOverlay .pill.error    { background:rgba(255,59,48,.15);  color:#b3271d; }
+  #tasksOverlay .pill.cancelled{ background:rgba(142,142,147,.15);color:#6e6e73; }
+
+  #tasksOverlay .muted { color:#86868b; font-size:12px; }
+  #tasksOverlay code   { background:#f2f2f5; padding:1px 6px; border-radius:5px;
+      font-size:11.5px; color:#1d1d1f; }
+
+  /* Close (X) — borderless circular */
+  #tasksOverlay .close { background:transparent; border:0; font-size:20px; line-height:1;
+      cursor:pointer; color:#86868b; padding:4px 8px; border-radius:6px; }
+  #tasksOverlay .close:hover { background:rgba(0,0,0,.05); color:#1d1d1f; }
+
+  /* Apple-style buttons — light, bordered, single blue accent for primary. */
+  #tasksOverlay .btn { font: inherit; font-size:12.5px; font-weight:500;
+      padding:5px 12px; border-radius:7px; border:1px solid transparent;
+      background:#fff; color:#1d1d1f; cursor:pointer;
+      box-shadow:0 1px 0 rgba(0,0,0,.04);
+      transition:background .12s ease, transform .04s ease; }
+  #tasksOverlay .btn:hover    { background:#f2f2f5; }
+  #tasksOverlay .btn:active   { transform:translateY(.5px); }
+  #tasksOverlay .btn:disabled { opacity:.5; cursor:default; }
+  #tasksOverlay .btn-primary  { background:#007aff; color:#fff; border-color:#007aff; }
+  #tasksOverlay .btn-primary:hover  { background:#0a6fe0; }
+  #tasksOverlay .btn-warning  { background:#fff; color:#b25b00; border-color:#e8e8eb; }
+  #tasksOverlay .btn-warning:hover  { background:#fff5e6; }
+  #tasksOverlay .btn-danger   { background:#fff; color:#d70015; border-color:#e8e8eb; }
+  #tasksOverlay .btn-danger:hover   { background:#ffeceb; }
+  #tasksOverlay .btn-small    { font-size:12px; padding:4px 10px; }
+
+  /* Inputs */
+  #tasksOverlay input[type="number"], #tasksOverlay select {
+      font:inherit; font-size:12.5px; padding:3px 6px; border-radius:6px;
+      border:1px solid #d2d2d7; background:#fff; color:#1d1d1f; }
+  #tasksOverlay input[type="checkbox"] { accent-color:#007aff; }
+
+  /* Progress bar */
+  #tasksOverlay .pbar  { position:relative; width:120px; height:6px; background:#ececef;
+      border-radius:999px; overflow:hidden; }
+  #tasksOverlay .pbar > span { display:block; height:100%; background:#007aff;
+      border-radius:999px; transition:width .3s; }
+  #tasksOverlay .pbar > em    { position:absolute; left:130px; top:-4px;
+      font-style:normal; font-size:11px; color:#6e6e73; line-height:14px; }
+  #tasksOverlay tr.st-done .pbar > span     { background:#34c759; }
+  #tasksOverlay tr.st-error .pbar > span    { background:#ff3b30; }
+  #tasksOverlay tr.st-cancelled .pbar > span{ background:#8e8e93; }
+</style>
+
+<div id="tasksOverlay" role="dialog" aria-modal="true" aria-label="Background tasks status">
+    <div class="panel" onclick="event.stopPropagation()">
+        <div class="bar">
+            <h5>Background Tasks</h5>
+            <span id="tasksMeta" class="muted"></span>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px;"
+                   title="Show jobs from all users (not just yours)">
+                <input type="checkbox" id="tasksAllUsers"> all users
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px;"
+                   title="Filter by user(s). Hold Cmd/Ctrl to select multiple. Empty = no filter.">
+                users:
+                <select id="tasksUserFilter" multiple size="1"
+                        style="min-width:120px; max-width:220px; height:30px;"></select>
+            </label>
+            <button id="tasksRefresh"     class="btn btn-small btn-primary">Refresh</button>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px;">
+                <input type="checkbox" id="tasksAuto" checked> auto every
+                <input type="number" id="tasksInterval" min="1" max="300" step="1" value="3"
+                       style="width:52px;"> s
+            </label>
+            <button id="tasksCleanup"     class="btn btn-small btn-warning" title="Remove terminal jobs already fetched by client">Cleanup fetched</button>
+            <button id="tasksCleanupAll"  class="btn btn-small btn-danger"  title="Remove ALL finished jobs (done / error / cancelled) and release their memory">Cleanup all</button>
+            <button class="close" onclick="closeTasksOverlay()" title="Close">&times;</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>user</th><th>job_id</th><th>status</th><th>target</th>
+                    <th>job_name</th><th>progress</th><th>elapsed</th>
+                    <th>message</th><th>fetched</th><th></th>
+                </tr>
+            </thead>
+            <tbody id="tasksBody">
+                <tr><td colspan="10" class="muted">loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(() => {
+    // Idempotency: if this partial is included more than once on a page,
+    // only the first occurrence wires up listeners / exposes the public API.
+    if (window.__tasksStatusLoaded) return;
+    window.__tasksStatusLoaded = true;
+
+    const overlay = document.getElementById('tasksOverlay');
+    const body    = document.getElementById('tasksBody');
+    const meta    = document.getElementById('tasksMeta');
+    const refresh = document.getElementById('tasksRefresh');
+    const auto    = document.getElementById('tasksAuto');
+    const allUsers   = document.getElementById('tasksAllUsers');
+    const userFilter = document.getElementById('tasksUserFilter');
+    const cleanupBtn = document.getElementById('tasksCleanup');
+    const cleanupAll = document.getElementById('tasksCleanupAll');
+    const intervalEl = document.getElementById('tasksInterval');
+    // Default auto-refresh interval (seconds). Configurable from the UI.
+    const DEFAULT_INTERVAL_S = 3;
+    let timer = null;
+
+    function currentIntervalMs() {
+        const s = parseInt(intervalEl && intervalEl.value, 10);
+        return Math.max(1, isNaN(s) ? DEFAULT_INTERVAL_S : s) * 1000;
+    }
+
+    function statusKey(s) {
+        s = (s || '').toLowerCase();
+        if (s.startsWith('done'))      return 'done';
+        if (s.startsWith('error'))     return 'error';
+        if (s.startsWith('cancelled')) return 'cancelled';
+        if (s.startsWith('running'))   return 'running';
+        return 'queued';
+    }
+
+    function refreshUserFilterOptions(data) {
+        // Preserve current selection across refreshes.
+        const selected = new Set(
+            Array.from(userFilter.selectedOptions).map(o => o.value)
+        );
+        const users = Array.from(
+            new Set(Object.values(data).map(j => j.user || ''))
+        ).filter(Boolean).sort();
+        userFilter.innerHTML = users
+            .map(u => `<option value="${escapeHtml(u)}"${selected.has(u) ? ' selected' : ''}>${escapeHtml(u)}</option>`)
+            .join('');
+        // Grow the box up to 6 rows so multiple options are visible.
+        userFilter.size = Math.min(Math.max(users.length, 1), 6);
+    }
+
+    function applyUserFilter(data) {
+        const sel = Array.from(userFilter.selectedOptions).map(o => o.value);
+        if (!sel.length) return data;
+        const out = {};
+        for (const [jid, j] of Object.entries(data)) {
+            if (sel.includes(j.user || '')) out[jid] = j;
+        }
+        return out;
+    }
+
+    async function loadTasks() {
+        try {
+            const url = '/jobs/list/' + (allUsers.checked ? '?all=1' : '');
+            const r = await fetch(url, { credentials: 'same-origin' });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const data = await r.json();
+            refreshUserFilterOptions(data);
+            const filtered = applyUserFilter(data);
+            renderTasks(filtered);
+            const scope = allUsers.checked ? 'all users' : 'you';
+            const sel = Array.from(userFilter.selectedOptions).map(o => o.value);
+            const filterNote = sel.length ? ` filter:${sel.join(',')}` : '';
+            meta.textContent = `${Object.keys(filtered).length}/${Object.keys(data).length} job(s) [${scope}${filterNote}] — ${new Date().toLocaleTimeString()}`;
+        } catch (e) {
+            body.innerHTML = `<tr><td colspan="10" style="color:#c62828">error: ${e.message}</td></tr>`;
+        }
+    }
+
+    function fmtElapsed(startIso, status) {
+        if (!startIso) return '';
+        const start = new Date(startIso).getTime();
+        if (isNaN(start)) return '';
+        const secs = Math.max(0, Math.floor((Date.now() - start) / 1000));
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        const s = secs % 60;
+        const pad = (n) => String(n).padStart(2, '0');
+        return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+    }
+
+    function renderTasks(data) {
+        const rows = Object.entries(data);
+        if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="10" class="muted">no jobs</td></tr>';
+            return;
+        }
+        // Sort by user (A→Z), then by status: running → queued → error → cancelled → done
+        const rank = { running: 0, queued: 1, error: 2, cancelled: 3, done: 4 };
+        rows.sort((a, b) => {
+            const ua = (a[1].user || ''), ub = (b[1].user || '');
+            if (ua !== ub) return ua.localeCompare(ub);
+            return (rank[statusKey(a[1].status)] ?? 9) - (rank[statusKey(b[1].status)] ?? 9);
+        });
+        body.innerHTML = rows.map(([jid, j]) => {
+            const key = statusKey(j.status);
+            const canCancel = (key === 'running' || key === 'queued');
+            const isTerminal = (key === 'done' || key === 'error' || key === 'cancelled');
+            const actionBtn = canCancel
+                ? `<button class="btn btn-small btn-danger" data-cancel="${jid}" title="Cancel this job"><i class="fas fa-times"></i></button>`
+                : (isTerminal
+                    ? `<button class="btn btn-small btn-warning" data-remove="${jid}" title="Remove this finished job from the server"><i class="fas fa-trash"></i></button>`
+                    : '');
+            const pct = Math.max(0, Math.min(100, Number(j.percent_complete || 0)));
+            const pbar = `<div class="pbar"><span style="width:${pct}%"></span><em>${pct}%</em></div>`;
+            const elapsed = fmtElapsed(j.start, j.status);
+            const userTip   = escapeHtml(j.user   || '');
+            const targetTip = escapeHtml(j.target || '');
+            return `
+                <tr class="st-${key}">
+                    <td><i class="fas fa-user" title="${userTip}" style="cursor:help;"></i></td>
+                    <td><code>${jid}</code></td>
+                    <td><span class="pill ${key}">${key}</span>
+                        <div class="muted">${escapeHtml(j.status || '')}</div></td>
+                    <td><i class="fas fa-bullseye" title="${targetTip}" style="cursor:help;"></i></td>
+                    <td>${escapeHtml(j.job_name || '')}</td>
+                    <td>${pbar}</td>
+                    <td>${elapsed}</td>
+                    <td>${escapeHtml(j.message || '')}</td>
+                    <td>${j.fetched ? '✓' : ''}</td>
+                    <td>${actionBtn}</td>
+                </tr>`;
+        }).join('');
+    }
+
+    // Delegated cancel / remove button handler.
+    body.addEventListener('click', async (ev) => {
+        const cancelBtn = ev.target.closest('button[data-cancel]');
+        const removeBtn = ev.target.closest('button[data-remove]');
+        if (cancelBtn) {
+            const jid = cancelBtn.getAttribute('data-cancel');
+            cancelBtn.disabled = true;
+            cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await fetch(`/jobs/cancel/?job_id=${encodeURIComponent(jid)}`, {
+                    method: 'POST', credentials: 'same-origin'
+                });
+                window.dispatchEvent(new CustomEvent('async-jobs-changed',
+                    { detail: { job_id: jid, reason: 'cancel' } }));
+            } finally {
+                loadTasks();
+            }
+            return;
+        }
+        if (removeBtn) {
+            const jid = removeBtn.getAttribute('data-remove');
+            removeBtn.disabled = true;
+            removeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await fetch(`/jobs/cleanup/?job_id=${encodeURIComponent(jid)}`, {
+                    method: 'POST', credentials: 'same-origin'
+                });
+                window.dispatchEvent(new CustomEvent('async-jobs-changed',
+                    { detail: { job_id: jid, reason: 'remove' } }));
+            } finally {
+                loadTasks();
+            }
+        }
+    });
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+
+    function startAuto() {
+        stopAuto();
+        timer = setInterval(loadTasks, currentIntervalMs());
+    }
+    function stopAuto() {
+        if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    refresh.onclick   = loadTasks;
+    auto.onchange     = () => auto.checked ? startAuto() : stopAuto();
+    allUsers.onchange = loadTasks;
+    userFilter.onchange = loadTasks;
+    if (intervalEl) {
+        // Restart the auto-refresh timer whenever the user changes the interval.
+        intervalEl.onchange = () => { if (auto.checked) startAuto(); };
+    }
+
+    // Auto-refresh the list when any StartAsync instance starts or cancels a job.
+    window.addEventListener('async-jobs-changed', () => {
+        if (overlay.classList.contains('open')) loadTasks();
+    });
+    cleanupBtn.onclick = async () => {
+        await fetch('/jobs/cleanup/', { method: 'POST', credentials: 'same-origin' });
+        loadTasks();
+    };
+    if (cleanupAll) {
+        cleanupAll.onclick = async () => {
+            if (!confirm('Remove ALL finished jobs (done / error / cancelled) from the server?')) return;
+            await fetch('/jobs/cleanup/?all=1', { method: 'POST', credentials: 'same-origin' });
+            loadTasks();
+        };
+    }
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeTasksOverlay(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('open')) closeTasksOverlay();
+    });
+
+    // Public API
+    window.openTasksOverlay = function () {
+        overlay.classList.add('open');
+        loadTasks();
+        if (auto.checked) startAuto();
+    };
+    window.closeTasksOverlay = function () {
+        overlay.classList.remove('open');
+        stopAuto();
+    };
+})();
+</script>

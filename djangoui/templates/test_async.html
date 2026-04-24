@@ -1,0 +1,78 @@
+{% include "tasks_status.html" %}
+
+<div style="padding:16px; font-family:system-ui, sans-serif;">
+    <h4>Experimental — Async Jobs test page</h4>
+
+    <div style="display:flex; gap:8px; align-items:center; margin:10px 0;">
+        <button id="go"    class="btn btn-small btn-primary" onclick="startSomeJobs()">Start job</button>
+        <button id="stop"  class="btn btn-small btn-danger" onclick="cancelJob()">Cancel</button>
+        <button id="tasks" class="btn btn-small btn-secondary" onclick="openTasksOverlay()">Tasks…</button>
+    </div>
+
+    <pre id="out" style="background:#f6f6f6; padding:8px; border-radius:4px;">idle</pre>
+    <hr/>
+
+    <div style="margin:10px 0;">
+        <textarea id="example_text" style="width:100%;" rows="5">this is just an example to show how to call asyncalls</textarea>
+        <div style="margin-top:6px;">
+            <button class="btn btn-small btn-primary" onclick="handleClick()">Synchronous</button>
+            <button class="btn btn-small btn-primary" onclick="handleClick_async()">ASynchronous</button>
+        </div>
+    </div>
+    <hr/>
+
+    <pre class="muted" style="font-size:13px; color:#666;">
+        This page loads the <code>async_jobs.html</code> partial (which provides the
+        <code>StartAsync</code> class and the Background Tasks overlay), then kicks
+        off a couple of sample jobs on load. Open the browser console and try:
+        <code>new StartAsync({ target: '_run', cb: myExCB });</code>
+    </pre>
+</div>
+
+
+<script>
+// Example callback — copy/paste template.
+function myExCB(status, message, jobId, snap) {
+    // Called on every poll AND once more on terminal status.
+    // `snap` is the full server snapshot; on 'done' it also has snap.result.
+    if (status.startsWith('done')) {
+        console.log('RESULT:', snap.result);
+    } else if (status.startsWith('error') || status.startsWith('cancelled')) {
+        console.warn(`job finished with status=${status}`);
+    }
+}
+
+// Kick off a couple of sample jobs.
+// The first one wires the on-page go/stop/out controls; the second runs
+// headlessly in parallel to demonstrate concurrency.
+function startSomeJobs() {
+    new StartAsync({ go: 'go', stop: 'stop', out: 'out', cb: myExCB, target: '_run', params: { job_name: 'sample-ui' } });
+    new StartAsync({ cb: myExCB, target: '_run', params: { job_name: 'sample-bg' } });
+}
+
+function handleClickCB(responseTxt, statusTxt, xhr, context, form) {
+    salert("Upload status: " + statusTxt + " : " + responseTxt);
+}
+
+function handleClick(url='/jobs/example_job/') {
+    var ctx = {something: "example_context"};
+    callws( url, "", handleClickCB, ctx);
+}
+
+function handleClick_asyncCB(status, message, jobId, snap, context, form) {
+    // Called on every poll AND once on terminal status.
+    if (status.startsWith('done') || status.startsWith('error') || status.startsWith('cancelled')) {
+        salert(`async ${jobId} → ${status} : ${message}`);
+    } else {
+        $('#out').text(`status=${status}\nmsg=${message}`);
+    }
+}
+
+function handleClick_async(url='/jobs/example_job/') {
+    var ctx = {something: "example_context"};
+    callws_async( url, "", handleClick_asyncCB, ctx);
+}
+
+
+
+</script>
