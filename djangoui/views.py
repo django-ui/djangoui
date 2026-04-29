@@ -170,6 +170,27 @@ def get_userinfo(access_token ):
     return None
 
 # -----------------------------------------------------------------------
+def get_adgroups(request ):
+    import requests
+    if request is None or not hasattr(request, "session"):
+        return []
+    u = request.user
+    if not u.is_authenticated:
+        return []
+    ad_groups   = request.session.get(SESSION_AD_GROUPS, [])
+    return ad_groups
+# -----------------------------------------------------------------------
+def get_employeeID(request ):
+    import requests
+    if request is None or not hasattr(request, "session"):
+        return ""
+    u = request.user
+    if not u.is_authenticated:
+        return ""
+    user_id   = request.session.get(SESSION_EMPLOYEE_ID, "")
+    return user_id
+
+# -----------------------------------------------------------------------
 # Session keys used to cache OIDC user info on the Django session.
 # We intentionally do NOT write these onto the Django User model because
 # the built-in User model has no such fields (and `user.groups` is a
@@ -193,6 +214,7 @@ def _attach_user_info_to_user(user, request):
     user.ad_groups   = request.session.get(SESSION_AD_GROUPS, [])
     user.employee_id = request.session.get(SESSION_EMPLOYEE_ID, "")
 
+    #logger.info(f"AD Groups: {user.user_info}")
 
 # -----------------------------------------------------------------------
 @csrf_exempt
@@ -224,6 +246,26 @@ def getEmployeeId(request):
         return HttpResponse("NOT OK - not logged in", status=403)
     employee_id = request.session.get(SESSION_EMPLOYEE_ID, "")
     return HttpResponse(f"OK {employee_id}", status=200)
+
+
+@csrf_exempt
+def getADGroups(request):
+    """Return the AD groups currently cached on the user's session.
+
+    Response is JSON: {"groups": [...], "ts": <epoch>, "user": "<username>"}.
+    """
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "not logged in"}, status=403)
+
+    ad_groups = request.session.get(SESSION_AD_GROUPS, []) or []
+    last_ts   = request.session.get(SESSION_USER_INFO_TS, 0) or 0
+
+    return JsonResponse({
+        "user":   request.user.username,
+        "groups": ad_groups,
+        "ts":     last_ts,
+    })
 
 
 @csrf_exempt
@@ -290,6 +332,8 @@ def postLoggedIn(sender, user, request, **kwargs):
             request.session[SESSION_EMPLOYEE_ID]  = user_info.get("employee_id", "").lower()
             request.session[SESSION_USER_INFO_TS] = now_ts
             request.session.modified = True
+            empid =request.session[SESSION_EMPLOYEE_ID] 
+            logger.info(f"Got refreshed info for: {empid}")
 
             #logger.info(f"AD Groups: {ad_groups}")
     except Exception as e:
@@ -306,6 +350,7 @@ def postLoggedIn(sender, user, request, **kwargs):
 def postLogOff(sender, user, request, **kwargs):
     #global ACCESS_TOKEN
     #ACCESS_TOKEN = None
+    request.session.set(SESSION_USER_INFO_TS, 0) 
     pass
 
 user_logged_in.connect(postLoggedIn)
