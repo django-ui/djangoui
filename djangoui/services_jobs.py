@@ -185,6 +185,39 @@ def cleanup(request, job_id="", all="", **kwargs):
     return AsyncJobs.remove(only_fetched=not remove_all)
 
 
+@webapi("/jobs/wait")
+def wait_jobs(request, all="", seq="0", timeout="30", **kwargs):
+    """Long-poll endpoint: blocks until jobs change or timeout expires.
+
+    - /jobs/wait/?seq=N         -> blocks until change_seq > N, then returns
+    - /jobs/wait/?seq=N&all=1   -> same, but includes all users' jobs
+
+    Response: {"jobs": {job_id: {...}, ...}, "seq": <int>}
+    """
+    last_seq = int(seq) if str(seq).isdigit() else 0
+    poll_timeout = min(max(int(timeout) if str(timeout).isdigit() else 30, 1), 60)
+    current_seq = AsyncJobs.wait_for_change(last_seq=last_seq, timeout=poll_timeout)
+
+    show_all = str(all).lower() in ("1", "true", "yes")
+    me = _current_user(request, kwargs)
+    out = {}
+    for jid, j in AsyncJobs.all().items():
+        if not show_all and j.get("user") != me:
+            continue
+        start_ts = j.get("start")
+        out[jid] = {
+            "status":           j.get("status"),
+            "message":          j.get("message"),
+            "target":           j.get("target"),
+            "job_name":         j.get("job_name"),
+            "user":             j.get("user"),
+            "fetched":          j.get("fetched"),
+            "percent_complete": j.get("percent_complete"),
+            "start":            start_ts.isoformat() if start_ts else None,
+        }
+    return {"jobs": out, "seq": current_seq}
+
+
 @webapi("/jobs/list")
 def list_jobs(request, all="", **kwargs):
     """Return a brief listing of jobs in the registry.

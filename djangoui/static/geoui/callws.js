@@ -228,7 +228,7 @@ let callws = async function ( url="/ui/test/", formName="", callbacks=null, cont
         JS_error("Error: " + error, "error", null, true)
     }).finally( function() {
         nbusy()
-        if ( RESPONSE.status == 200 ) {
+        if ( RESPONSE && RESPONSE.status == 200 ) {
             if (callbacks) {
                 if ( Array.isArray(callbacks) )
                     for (var cb in callbacks)

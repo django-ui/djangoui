@@ -102,9 +102,7 @@
             </label>
             <button id="tasksRefresh"     class="btn btn-small btn-primary">Refresh</button>
             <label style="display:flex; align-items:center; gap:4px; font-size:13px;">
-                <input type="checkbox" id="tasksAuto" checked> auto every
-                <input type="number" id="tasksInterval" min="1" max="300" step="1" value="3"
-                       style="width:52px;"> s
+                <input type="checkbox" id="tasksAuto" checked> auto (live)
             </label>
             <button id="tasksCleanup"     class="btn btn-small btn-warning" title="Remove terminal jobs already fetched by client">Cleanup fetched</button>
             <button id="tasksCleanupAll"  class="btn btn-small btn-danger"  title="Remove ALL finished jobs (done / error / cancelled) and release their memory">Cleanup all</button>
@@ -142,14 +140,10 @@
     const cleanupBtn = document.getElementById('tasksCleanup');
     const cleanupAll = document.getElementById('tasksCleanupAll');
     const intervalEl = document.getElementById('tasksInterval');
-    // Default auto-refresh interval (seconds). Configurable from the UI.
-    const DEFAULT_INTERVAL_S = 3;
-    let timer = null;
-
-    function currentIntervalMs() {
-        const s = parseInt(intervalEl && intervalEl.value, 10);
-        return Math.max(1, isNaN(s) ? DEFAULT_INTERVAL_S : s) * 1000;
-    }
+    // Long-poll state: seq tracks server-side change counter.
+    let _pollSeq = 0;
+    let _pollAbort = null;
+    let _polling = false;
 
     function statusKey(s) {
         s = (s || '').toLowerCase();
@@ -185,22 +179,50 @@
         return out;
     }
 
+    function _applyPayload(data) {
+        refreshUserFilterOptions(data);
+        const filtered = applyUserFilter(data);
+        renderTasks(filtered);
+        const scope = allUsers.checked ? 'all users' : 'you';
+        const sel = Array.from(userFilter.selectedOptions).map(o => o.value);
+        const filterNote = sel.length ? ` filter:${sel.join(',')}` : '';
+        meta.textContent = `${Object.keys(filtered).length}/${Object.keys(data).length} job(s) [${scope}${filterNote}] — ${new Date().toLocaleTimeString()}`;
+    }
+
     async function loadTasks() {
         try {
             const url = '/jobs/list/' + (allUsers.checked ? '?all=1' : '');
             const r = await fetch(url, { credentials: 'same-origin' });
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             const data = await r.json();
-            refreshUserFilterOptions(data);
-            const filtered = applyUserFilter(data);
-            renderTasks(filtered);
-            const scope = allUsers.checked ? 'all users' : 'you';
-            const sel = Array.from(userFilter.selectedOptions).map(o => o.value);
-            const filterNote = sel.length ? ` filter:${sel.join(',')}` : '';
-            meta.textContent = `${Object.keys(filtered).length}/${Object.keys(data).length} job(s) [${scope}${filterNote}] — ${new Date().toLocaleTimeString()}`;
+            _applyPayload(data);
         } catch (e) {
             body.innerHTML = `<tr><td colspan="10" style="color:#c62828">error: ${e.message}</td></tr>`;
         }
+    }
+
+    async function longPoll() {
+        if (_polling) return;
+        _polling = true;
+        while (auto.checked && overlay.classList.contains('open')) {
+            try {
+                _pollAbort = new AbortController();
+                const qs = `?seq=${_pollSeq}&timeout=30` + (allUsers.checked ? '&all=1' : '');
+                const r = await fetch('/jobs/wait/' + qs, {
+                    credentials: 'same-origin',
+                    signal: _pollAbort.signal
+                });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const payload = await r.json();
+                _pollSeq = payload.seq || 0;
+                _applyPayload(payload.jobs || {});
+            } catch (e) {
+                if (e.name === 'AbortError') break;
+                body.innerHTML = `<tr><td colspan="10" style="color:#c62828">error: ${e.message}</td></tr>`;
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        }
+        _polling = false;
     }
 
     function fmtElapsed(startIso, status) {
@@ -301,21 +323,16 @@
     }
 
     function startAuto() {
-        stopAuto();
-        timer = setInterval(loadTasks, currentIntervalMs());
+        longPoll();
     }
     function stopAuto() {
-        if (timer) { clearInterval(timer); timer = null; }
+        if (_pollAbort) { _pollAbort.abort(); _pollAbort = null; }
     }
 
     refresh.onclick   = loadTasks;
     auto.onchange     = () => auto.checked ? startAuto() : stopAuto();
-    allUsers.onchange = loadTasks;
+    allUsers.onchange = () => { stopAuto(); loadTasks(); if (auto.checked) startAuto(); };
     userFilter.onchange = loadTasks;
-    if (intervalEl) {
-        // Restart the auto-refresh timer whenever the user changes the interval.
-        intervalEl.onchange = () => { if (auto.checked) startAuto(); };
-    }
 
     // Auto-refresh the list when any StartAsync instance starts or cancels a job.
     window.addEventListener('async-jobs-changed', () => {
