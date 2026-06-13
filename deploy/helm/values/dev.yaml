@@ -1,0 +1,95 @@
+nameOverride: "ontology-experiment"
+
+image:
+  registry: "harbor.us.lmco.com"
+  ## => STEP 1 of 2: Update this to your image repository i your image
+  repository: "lmc.space.ai/aiapp"
+  tag: "latest"
+  pullPolicy: Always
+  pullSecrets:
+    - harbor-lmc.space.ai.llmapp-image-pull
+
+app:
+  secrets:
+    replace_me: 'replace_me_here'
+  config:
+    oauth_client_id_dev: 'replace_me_here'
+
+replicaCount: 1
+
+resources:
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+##
+pdb:
+  create: false
+  ## Min number of pods that must still be available after the eviction
+  ##
+  minAvailable: 1
+  ## Max number of pods that can be unavailable after the eviction
+  ##
+  # maxUnavailable: 1
+  
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPU: 80
+  ## targetMemory: 50
+
+extraEnvVarsSecret: #ontology-experiment-dev-env-secrets
+extraEnvVars: #[]
+#  - name: TEST_PS
+#    value: Me
+
+podAnnotations:
+  sidecar.istio.io/inject: "true"
+  sidecar.istio.io/proxyCPULimit: 200m
+  sidecar.istio.io/proxyMemoryLimit: 256Mi
+  sidecar.istio.io/rewriteAppHTTPProbers: "true"
+
+## Istio Configuration.
+##
+istio:
+  hosts:
+    ## Specifies whether to configure the virtual service and gateway to accept traffic from all (*) hosts.
+    ## Generally recommended to configure specific hosts instead.
+    ##
+    useAllHosts: false
+    allHosts:
+      ## Enable TLS/SSL for the route.
+      ## Make sure the secret with your TLS certificate is created in your service mesh control plane ("-scmp") namespace.
+      ##
+      enableTls: false
+      ## Name of the secret with your TLS certificate.
+      ##
+      # tlsSecretName: 
+    ## Define the specific hosts if you are not enabling useAllHosts.
+    ## This will allow you to specify your own routes.
+    ##
+    specificHosts:
+      ## List of hosts.
+      ## ==> STEP 2: Add your domain of your choice 
+      - host: llmapp-dev.apps.ocp-ugw1-dev.ecs.us.lmco.com
+        enableTls: true
+      ## ==> STEP 2: Create this secret in your service mesh control plane ("-scmp") namespace
+        tlsSecretName: llmapp-dev-tls-cert
+      # - host: ontology-experiment-dev.us.lmco.com
+      #   enableTls: true
+      #   tlsSecretName: ontology-experiment-dev-tls-cert
+  destinationRule:
+    ## LoadBalancer policy.
+    ## Defaults to "ROUND_ROBIN", can be manually set
+    ##
+    loadBalancerPolicy: STICKY_SESSIONS

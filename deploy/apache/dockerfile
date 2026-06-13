@@ -1,0 +1,20 @@
+FROM ubuntu/apache2:latest
+EXPOSE 443 80
+
+# Install SSL module
+RUN a2enmod ssl && \
+    a2enmod proxy && \
+    a2enmod proxy_http && \
+    a2enmod headers && \
+    mv /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.bak && \
+    a2ensite default-ssl
+
+## Uncomment the following to install curl and debug - otherwise keep it light
+RUN apt-get update && apt-get install -y --no-install-recommends curl vim iputils-ping
+
+# Copy your local certificates into the standard Ubuntu SSL directories
+COPY sada.us.lmco.com.crt /etc/ssl/certs/sada.us.lmco.com.crt
+COPY sada.us.lmco.com.key /etc/ssl/certs/sada.us.lmco.com.key
+
+# Copy and enable the custom SSL configuration
+COPY default-ssl.conf /etc/apache2/sites-available/default-ssl.conf

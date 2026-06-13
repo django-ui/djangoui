@@ -1,0 +1,5 @@
+
+** Please be patient while the chart is being deployed **
+
+{{- include "common.warnings.rollingTag" .Values.image }}
+{{- include "ontology-experiment.validateValues" . }}

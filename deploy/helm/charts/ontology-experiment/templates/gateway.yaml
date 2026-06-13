@@ -1,0 +1,57 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "ontology-experiment.fullname" . }}-gw
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+      istio: ingressgateway # use istio default controller
+  servers:
+  {{- if .Values.istio.hosts.useAllHosts }}
+  {{- if .Values.istio.hosts.allHosts.enableTls }}
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: {{ .Values.istio.hosts.allHosts.tlsSecretName }}
+    hosts:
+      - "*"
+  {{- else }}
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+      - "*"
+  {{- end }}
+  {{- else }}
+  {{- range .Values.istio.hosts.specificHosts }}
+  {{- if .enableTls }}
+  - port:
+      number: 443
+      name: https-{{ .host }}
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: {{ .tlsSecretName }}
+    hosts:
+      - {{ .host | quote }}
+  {{- else }}
+  - port:
+      number: 80
+      name: http-{{ .host }}
+      protocol: HTTP
+    hosts:
+      - {{ .host | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}

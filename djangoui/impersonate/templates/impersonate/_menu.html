@@ -1,0 +1,45 @@
+{% comment %}
+Drop-in submenu fragment. Styling is intentionally minimal/structural so it
+inherits the host project's brand-sub / brand-sub-menu / dd-section classes
+when present. If those classes are absent, the menu still works visually as a
+plain list.
+{% endcomment %}
+{% if can_impersonate %}
+<div class="brand-sub impersonate-sub" id="impSub">
+    <a class="brand-sub-toggle" href="{% url 'impersonate:picker' %}"
+       onclick="(function(e){e.preventDefault();e.stopPropagation();var s=document.getElementById('impSub');if(s)s.classList.toggle('open');})(event)">
+        <i class="fas fa-user-secret"></i>Impersonate
+        <i class="fas fa-caret-right sub-caret"></i>
+    </a>
+    <div class="brand-sub-menu">
+        <a class="sub-action" href="{% url 'impersonate:picker' %}">
+            <i class="fas fa-user-secret"></i>Open impersonation page
+        </a>
+        <div class="sub-scroll">
+            {% if accounts %}
+            <div class="dd-section">Resource accounts ({{ accounts|length }})</div>
+            {% for a in accounts %}
+            <form method="post" action="{% url 'impersonate:start' %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="account" value="{{ a.name }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit"
+                        style="display:flex;align-items:center;gap:8px;width:100%;
+                               text-align:left;background:none;border:0;
+                               padding:8px 14px;cursor:pointer;color:inherit;font:inherit;">
+                    <i class="fas fa-user-tag"></i>
+                    <span>{{ a.label }}<br>
+                        <small style="color:#9a9a9e;">{{ a.name }}</small>
+                    </span>
+                </button>
+            </form>
+            {% endfor %}
+            {% else %}
+            <div style="padding:12px 14px;font-size:12.5px;color:#9a9a9e;">
+                No resource accounts configured.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}

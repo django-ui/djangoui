@@ -1,0 +1,48 @@
+#FROM registry.access.redhat.com/ubi9/ubi
+FROM harbor.global.lmco.com/lmc.eo.swf.lmified/ext.hub.docker.com/library/python:3.12-slim AS builder
+
+# Set working directory
+WORKDIR /build
+
+COPY requirements.txt /build/requirements.txt
+
+# Set proxy early so apt-get can reach deb.debian.org through corporate proxy
+ENV PROXY='http://proxy-zsgov.external.lmco.com:80'
+ENV http_proxy='http://proxy-zsgov.external.lmco.com:80' \
+    https_proxy='http://proxy-zsgov.external.lmco.com:80' \
+    HTTP_PROXY='http://proxy-zsgov.external.lmco.com:80' \
+    HTTPS_PROXY='http://proxy-zsgov.external.lmco.com:80' \
+    NO_PROXY='.lmco.com,.local,localhost,172.16.0.0/12,192.168.0.0/16,*amazonaws.com,169.254.169.*,lmco.com'
+
+# Install necessary dependencies, including curl for fetching certificates
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates  apt-transport-https \
+    curl libstdc++6 libpython3-dev libpq-dev  gcc  unixodbc \
+    iputils-ping vim sudo git wget \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* 
+    
+
+# Fetch the LM CA and install the cert
+RUN curl https://crl.external.lmco.com/trust/pem/combined/Combined_pem.pem -o /usr/local/share/ca-certificates/lm_ca_combined.crt && \
+    update-ca-certificates
+
+# Add LM Cert Chain
+ENV PIP_CERT=/usr/local/share/ca-certificates/lm_ca_combined.crt
+ENV SSL_CERT_FILE=/usr/local/share/ca-certificates/lm_ca_combined.crt \
+    REQUESTS_CA_BUNDLE=/usr/local/share/ca-certificates/lm_ca_combined.crt \
+    AWS_CA_BUNDLE=/usr/local/share/ca-certificates/lm_ca_combined.crt
+
+ARG EFOSS_USERNAME \
+    EFOSS_TOKEN \
+    PWD
+
+ENV PIP="--proxy ${PROXY} --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org  --default-timeout=100 "
+RUN python -m venv /usr/local && \
+    /usr/local/bin/pip install --no-cache-dir $PIP -r /build/requirements.txt
+
+ENV USER=poduser
+
+RUN echo USER IS: ${USER} && \
+    useradd -ms /bin/bash ${USER} &&  \ 
+    usermod -aG root ${USER} && \
+    echo ${USER}:${USER} | chpasswd

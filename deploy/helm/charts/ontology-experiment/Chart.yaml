@@ -1,0 +1,11 @@
+apiVersion: v2
+name: ontology-experiment
+description: A Helm chart for Kubernetes for Ontology Experiment Frontend
+type: application
+
+# NOTE: Versions in this file are automatically updated by the GitLab CI/CD pipeline prior to deployment.
+# Manual changes to these versions may be overwritten. 
+# Refer to the CI/CD pipeline configuration for version management.
+# Refer to the git tags in GitLab for current version information.
+version: 1.0.0
+appVersion: 1.0.0

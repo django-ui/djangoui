@@ -1,0 +1,42 @@
+# Builder stage (remote harbor (US) instance)
+FROM harbor.us.lmco.com/lmc.space.ai/base-python:latest AS builder
+# Final stage
+FROM harbor.global.lmco.com/lmc.eo.swf.lmified/ext.hub.docker.com/library/python:3.12-slim
+EXPOSE 8000
+
+# Setup proxy environment vars
+ENV PROXY='http://proxy-zsgov.external.lmco.com:80'
+ENV PIP="--proxy ${PROXY} --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org  --default-timeout=100 "
+
+ENV USER=poduser
+ENV APPDIR=/opt/apps
+
+RUN useradd -ms /bin/bash ${USER}
+RUN mkdir -p ${APPDIR}
+RUN chown -R ${USER}:${USER} ${APPDIR}/..
+RUN mkdir -p ${APPDIR}/logs
+RUN chgrp -R 0 ${APPDIR}/.. && chmod -R g=u ${APPDIR}/..
+
+# Copy the Python dependencies from the builder stage
+COPY --from=builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+WORKDIR ${APPDIR}
+COPY --chown=${USER}:${USER} .  ${APPDIR}/
+RUN rm -rf ${APPDIR}/djangoui ${APPDIR}/mainapp && \
+    mkdir -p ${APPDIR}/djangoui ${APPDIR}/mainapp
+
+COPY --from=djangoui --chown=${USER}:${USER} djangoui/ ${APPDIR}/djangoui/
+COPY --from=djangoui --chown=${USER}:${USER} example_project/mainapp/ ${APPDIR}/mainapp/
+RUN mkdir -p ${APPDIR}/logs && \
+    chgrp -R 0 ${APPDIR} && \
+    chmod -R g=u ${APPDIR}
+USER ${USER}
+
+# Set environment variables to optimize Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HOME=${APPDIR}  \
+    PATH="/home/${USER}/.local/bin:${PATH}"
+
+CMD ["bash", "-c", "cd ${APPDIR} && ./run.sh"]

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Impersonate resource account</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',
+         'Helvetica Neue',system-ui,sans-serif; color:#1d1d1f; background:#fbfbfd; }
+  main { max-width:720px; margin:48px auto; padding:0 24px; }
+  h1   { font-size:28px; font-weight:600; margin:0 0 8px; }
+  .sub { color:#6e6e73; margin:0 0 24px; }
+  .banner { background:#fff8e1; border:1px solid #f5c518; border-radius:10px;
+            padding:14px 16px; margin-bottom:20px; display:flex; align-items:center;
+            gap:12px; }
+  label { display:block; font-weight:600; margin-bottom:8px; }
+  select, button { font:inherit; }
+  select { width:100%; padding:10px 12px; border-radius:10px;
+           border:1px solid #d2d2d7; font-size:15px; background:#fff; }
+  .btn-primary { margin-top:16px; background:#0071e3; color:#fff; border:0;
+                 border-radius:10px; padding:10px 18px; font-size:15px;
+                 font-weight:500; cursor:pointer; }
+  .btn-primary[disabled] { opacity:0.5; cursor:not-allowed; }
+  .btn-dark { background:#1d1d1f; color:#fff; border:0; border-radius:8px;
+              padding:6px 12px; cursor:pointer; }
+  .empty { color:#6e6e73; font-size:14px; padding:16px;
+           border:1px dashed #d2d2d7; border-radius:10px; }
+  code { background:#f2f2f5; padding:1px 5px; border-radius:4px;
+         font-size:12.5px; }
+  a.back { display:inline-block; margin-top:24px; color:#0071e3;
+           text-decoration:none; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Impersonate resource account</h1>
+  <p class="sub">
+    Sign requests as a configured service / resource account. Your real
+    identity is preserved server-side for audit and can be restored at any
+    time.
+  </p>
+
+  {% if impersonating_as %}
+  <div class="banner">
+    <strong>Currently impersonating:</strong> {{ impersonating_as }}
+    {% if original_username %}
+      <span style="color:#6e6e73;">(as {{ original_username }})</span>
+    {% endif %}
+    <form method="post" action="{% url 'impersonate:stop' %}"
+          style="margin:0 0 0 auto;">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="/">
+      <button type="submit" class="btn-dark">Exit impersonation</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if accounts %}
+  <form method="post" action="{% url 'impersonate:start' %}">
+    {% csrf_token %}
+    <label for="account">Resource account</label>
+    <select name="account" id="account" required>
+      {% for a in accounts %}
+        <option value="{{ a.name }}">{{ a.label }} ({{ a.name }})</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="next" value="/">
+    <button type="submit" class="btn-primary"
+            {% if impersonating_as %}disabled title="Exit current impersonation first"{% endif %}>
+      Start impersonation
+    </button>
+  </form>
+  {% else %}
+  <div class="empty">
+    No resource accounts configured. Add entries to
+    <code>IMPERSONATION_ACCOUNTS</code> in your project settings
+    (e.g. <code>my_config.py</code>).
+  </div>
+  {% endif %}
+
+  <a class="back" href="/">&larr; Back</a>
+</main>
+</body>
+</html>

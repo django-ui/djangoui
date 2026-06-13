@@ -35,8 +35,13 @@ urlpatterns = [
     path(r'getEmployeeId/', views.getEmployeeId, name='getEmployeeId'),
     path(r'isInThisGroup/', views.isInThisGroup, name='isInThisGroup'),
 
-
     path(r'broadcast/', views_channels.broadcast, name='brodcast'),
+] + (
+    # Optional: only wire up the portable impersonate app when it is available
+    # and configured (see IMPERSONATION_ENABLED in settings.py).
+    [path('impersonate/', include('djangoui.impersonate.urls', namespace='impersonate'))]
+    if getattr(settings, 'IMPERSONATION_ENABLED', False) else []
+) + [
     path(r'', views.index, name='index'),
     
     

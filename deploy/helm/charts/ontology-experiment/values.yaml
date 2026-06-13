@@ -1,0 +1,343 @@
+image:
+  # registry: registry.global.lmco.com
+  # repository: lmco-microsoft-dotnet-core/aspnet
+  # tag: 3.1
+  # pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  # pullSecrets:
+  #   - myRegistryKeySecretName
+
+## Kubernetes Cluster Domain
+##
+clusterDomain: cluster.local
+
+## Add labels to all the deployed resources
+##
+commonLabels: {}
+
+## Add annotations to all the deployed resources
+##
+commonAnnotations: {}
+
+## Additional environment variables to set
+## E.g:
+## extraEnvVars:
+##   - name: FOO
+##     value: BAR
+##
+extraEnvVars: []
+
+## ConfigMap with extra environment variables
+##
+# extraEnvVarsCM:
+
+## Secret with extra environment variables
+##
+# extraEnvVarsSecret:
+
+## Run Pods on a specific node
+##
+# nodeName:
+
+## Number of replicas to deploy.
+##
+replicaCount: 1
+
+## StrategyType, can be set to RollingUpdate or Recreate by default.
+##
+strategyType: RollingUpdate
+
+## Pod affinity preset
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+## Allowed values: soft, hard
+##
+podAffinityPreset: ""
+
+## Pod anti-affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+## Allowed values: soft, hard
+##
+podAntiAffinityPreset: soft
+
+## Node affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+## Allowed values: soft, hard
+##
+nodeAffinityPreset:
+  ## Node affinity type
+  ## Allowed values: soft, hard
+  type: ""
+  ## Node label key to match
+  ## E.g.
+  ## key: "kubernetes.io/e2e-az-name"
+  ##
+  key: ""
+  ## Node label values to match
+  ## E.g.
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  ##
+  values: []
+
+## Affinity for pod assignment. Evaluated as a template.
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## Node labels for pod assignment. Evaluated as a template.
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## Tolerations for pod assignment. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## Annotations for server pods.
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: {}
+
+## Pods' priority.
+## ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+##
+# priorityClassName: ""
+
+## lifecycleHooks for the container to automate configuration before or after startup.
+##
+lifecycleHooks: {}
+
+## Pods' Security Context.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+##
+podSecurityContext:
+  enabled: false
+  ## sysctl settings
+  ## Example:
+  ## sysctls:
+  ## - name: net.core.somaxconn
+  ##   value: "10000"
+  ##
+  sysctls: {}
+
+## Containers' Security Context (only main container).
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+##
+containerSecurityContext:
+  enabled: false
+  runAsUser: 0
+
+## Deployment Container Port
+##
+containerPort: 8000
+
+## Containers' resource requests and limits.
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits: {}
+  #   cpu: 100m
+  #   memory: 128Mi
+  requests: {}
+  #   cpu: 100m
+  #   memory: 128Mi
+
+## Pods' liveness and readiness probes. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  timeoutSeconds: 1
+  periodSeconds: 20
+  failureThreshold: 6
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  timeoutSeconds: 1
+  periodSeconds: 20
+  failureThreshold: 6
+  successThreshold: 1
+
+## Custom Liveness probes for pods
+##
+customLivenessProbe: {}
+
+## Custom Rediness probes pods
+##
+customReadinessProbe: {}
+
+## extraVolumes and extraVolumeMounts allows you to mount other volumes
+## Examples:
+## extraVolumeMounts:
+##   - name: extras
+##     mountPath: /usr/share/extras
+##     readOnly: true
+## extraVolumes:
+##   - name: extras
+##     emptyDir: {}
+##
+extraVolumeMounts: []
+extraVolumes: []
+
+## Add sidecars to the pods.
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+sidecars: {}
+
+## Extra objects to deploy (value evaluated as a template)
+##
+extraDeploy: []
+
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+##
+pdb:
+  create: false
+  ## Min number of pods that must still be available after the eviction
+  ##
+  minAvailable: 1
+  ## Max number of pods that can be unavailable after the eviction
+  ##
+  # maxUnavailable: 1
+
+## Autoscaling parameters.
+##
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  # targetCPU: 50
+  # targetMemory: 50
+
+## Service paramaters.
+##
+service:
+  ## Service type.
+  ##
+  type: ClusterIP
+  ## Service port.
+  ##
+  port: 80
+  ## Specify the nodePort value for the LoadBalancer and NodePort service types.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ##
+  # nodePort:
+  ## Service clusterIP.
+  ##
+  # clusterIP: None
+  ## Enable client source IP preservation
+  ## ref http://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  ##
+  externalTrafficPolicy: Cluster
+  ## Set the LoadBalancer service type to internal only.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+  ##
+  # loadBalancerIP:
+  ## Load Balancer sources.
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ##
+  # loadBalancerSourceRanges:
+  # - 10.10.10.0/24
+  ## Provide any additional annotations which may be required. Evaluated as a template.
+  ##
+  annotations: {}
+  # sessionAffinity: ClientIP
+
+## K8s Service Account.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccount:
+  ## Specifies whether a ServiceAccount should be created.
+  ##
+  create: true
+  annotations: {}
+
+## Istio Configuration.
+##
+istio:
+  hosts:
+    ## Specifies whether to configure the virtual service and gateway to accept traffic from all (*) hosts.
+    ## Generally recommended to configure specific hosts instead.
+    ##
+    useAllHosts: true
+    allHosts:
+      ## Enable TLS/SSL for the route.
+      ## Make sure the secret with your TLS certificate is created in your service mesh control plane ("-scmp") namespace.
+      ##
+      enableTls: false
+      ## Name of the secret with your TLS certificate.
+      ##
+      # tlsSecretName: 
+    ## Define the specific hosts if you are not enabling useAllHosts.
+    ## This will allow you to specify your own routes.
+    ##
+    # specificHosts:
+      ## List of hosts.
+      ##
+      # - host: route1.apps.ocp-uge1-dev.ecs.us.lmco.com
+        ## Enable TLS/SSL for the route.
+        ## Make sure the secret with your TLS certificate is created in your service mesh control plane ("-scmp") namespace.
+        ##
+        # enableTls: true
+        # tlsSecretName: 
+      # - host: route1.us.lmco.com
+        ## Enable TLS/SSL for the route.
+        ## Make sure the secret with your TLS certificate is created in your service mesh control plane ("-scmp") namespace.
+        ##
+        # enableTls: true
+        ## Name of the secret with your TLS certificate.
+        ##
+        # tlsSecretName: 
+  destinationRule:
+    ## LoadBalancer policy.
+    ##
+    loadBalancerPolicy: ROUND_ROBIN
+  serviceEntries:
+    ## List of ServiceEntry for outgoing traffic.
+    ## ref: https://istio.io/latest/docs/reference/config/networking/service-entry/
+    ## Examples below:
+    ##
+    # - apiVersion: networking.istio.io/v1alpha3
+    #   kind: ServiceEntry
+    #   metadata:
+    #     name: auth
+    #   spec:
+    #     hosts:
+    #     - auth.p.external.lmco.com
+    #     ports:
+    #     - number: 443
+    #       name: https
+    #       protocol: HTTPS
+    #     resolution: DNS
+    #     location: MESH_EXTERNAL
+    # - apiVersion: networking.istio.io/v1alpha3
+    #   kind: ServiceEntry
+    #   metadata:
+    #     name: authuat
+    #   spec:
+    #     hosts:
+    #     - authuat.p.external.lmco.com
+    #     ports:
+    #     - number: 443
+    #       name: https
+    #       protocol: HTTPS
+    #     resolution: DNS
+    #     location: MESH_EXTERNAL

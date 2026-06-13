@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ include "ontology-experiment.fullname" . }}-dr
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  host: {{ include "ontology-experiment.fullname" . }}-svc
+  trafficPolicy:
+    loadBalancer:
+      {{- if eq .Values.istio.destinationRule.loadBalancerPolicy "STICKY_SESSIONS"}}
+      consistentHash:
+        useSourceIp: true
+      {{- else }}
+      simple: {{ default "ROUND_ROBIN" .Values.istio.destinationRule.loadBalancerPolicy }}
+      {{- end}}
+    tls:
+      mode: ISTIO_MUTUAL

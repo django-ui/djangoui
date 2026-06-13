@@ -1,0 +1,29 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "ontology-experiment.fullname" . }}-vsvc
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  hosts:
+  {{- if .Values.istio.hosts.useAllHosts }}
+  - "*"
+  {{- else }}
+  {{- range .Values.istio.hosts.specificHosts }}
+  - {{ .host | quote }}
+  {{- end }}
+  {{- end }}
+  gateways:
+  - {{ include "ontology-experiment.fullname" . }}-gw
+  http:
+  - route:
+    - destination:
+        host: {{ include "ontology-experiment.fullname" . }}-svc
+        port:
+          number: {{ .Values.service.port }}

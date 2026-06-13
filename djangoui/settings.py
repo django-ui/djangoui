@@ -65,6 +65,7 @@ XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
 
 def appcontext(request):
+    from django.conf import settings as _settings
     context = {
         "appname"           : "DEFAULT EXAMPLE",
         "weburl"            : "https://Your URL/",
@@ -75,6 +76,8 @@ def appcontext(request):
         "SSO"               : 0,                       # 1: to show single signon during login
         "DO_NOT_SHOW_LOGIN" : 1,                       # 1: do not allow users to enter username/passwd
         "ALLOW_REGISTRATION": 0,                       # 1: allow users to register
+        # Optional impersonation widgets in templates render only when enabled.
+        "IMPERSONATION_ENABLED": getattr(_settings, "IMPERSONATION_ENABLED", False),
     }
 
     return context
@@ -333,11 +336,48 @@ def detectInstalledApps(appslist):
 if ( DETECT_INSTALLED_APPS ):
     detectInstalledApps(INSTALLED_APPS)
 # -----------------------------------------------------------------------------------------
+# Only include apps that are actually importable; skip silently otherwise so the
+# project still boots when optional apps (e.g. aif_agents, chatapp) are absent.
+import importlib.util as _importlib_util
+
+def _app_is_available(app_name):
+    try:
+        spec = _importlib_util.find_spec(app_name)
+    except (ModuleNotFoundError, ValueError, ImportError):
+        return False
+    return spec is not None
+
+_AVAILABLE_INCLUDE_APPS = [a for a in INCLUDE_APPS if _app_is_available(a)]
+_MISSING_INCLUDE_APPS = [a for a in INCLUDE_APPS if a not in _AVAILABLE_INCLUDE_APPS]
+if _MISSING_INCLUDE_APPS:
+    logger.warning(f"Skipping unavailable INCLUDE_APPS: {_MISSING_INCLUDE_APPS}")
+INCLUDE_APPS = _AVAILABLE_INCLUDE_APPS
+
 DETECTED_APPS += INCLUDE_APPS
 INSTALLED_APPS = INSTALLED_APPS + DETECTED_APPS
 
-# Include URLS 
-DETECTED_URLS = [ path(f'{a}/', include(f'{a}.urls'), name=a) for a in INCLUDE_APPS ]
+# -----------------------------------------------------------------------------------------
+# Optional: OIDC resource-account impersonation.
+# Enabled only if the portable `impersonate` app is importable AND the host
+# project has configured at least one resource account (IMPERSONATION_ACCOUNTS).
+# When disabled, the project boots normally without the app or its URLs.
+IMPERSONATION_ENABLED = (
+    _app_is_available("djangoui.impersonate")
+    and bool(globals().get("IMPERSONATION_ACCOUNTS"))
+)
+if IMPERSONATION_ENABLED:
+    if "djangoui.impersonate" not in INSTALLED_APPS:
+        INSTALLED_APPS = INSTALLED_APPS + ["djangoui.impersonate"]
+    logger.info("Impersonation enabled: 'djangoui.impersonate' app + IMPERSONATION_ACCOUNTS present.")
+else:
+    logger.info("Impersonation disabled: 'djangoui.impersonate' app missing or no IMPERSONATION_ACCOUNTS configured.")
+
+# Include URLS (only for apps that expose a urls module)
+DETECTED_URLS = [
+    path(f'{a}/', include(f'{a}.urls'), name=a)
+    for a in INCLUDE_APPS
+    if _app_is_available(f'{a}.urls')
+]
 if (os.path.exists("mainapp") and 'mainapp' not in INSTALLED_APPS):
     INSTALLED_APPS += ['mainapp'] 
     DETECTED_URLS += [path(f'mainapp/', include(f'mainapp.urls'), name='mainapp') ]
