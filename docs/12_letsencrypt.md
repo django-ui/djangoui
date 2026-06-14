@@ -4,3 +4,5 @@ When you run the web server in https mode, it requires that you create a valid c
 The certificate authorities might cost you a ton; instead you can create and sign your certificate.
 This can save a lot of money resources including time to manage the resources.
 
+from your ubuntu run:
+sudo certbot certonly --manual --preferred-challenges dns -d geospaces.org -d "*.geospaces.org"

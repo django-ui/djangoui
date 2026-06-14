@@ -35,7 +35,8 @@ and act as a middle agent to transport information " http://localhost:8003/" and
 * Notice * when the url is 'http://edu.server.org', it redirets to https.
 Https service uses certificates obtained from 'https://letsencrypt.org/'
 More about this later.
-
+to get certificate run:
+sudo certbot certonly --manual --preferred-challenges dns -d geospaces.org -d "*.geospaces.org"
 
 
 ```
