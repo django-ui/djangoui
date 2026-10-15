@@ -240,6 +240,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    #'geoapp.perm_middleware.PermissionGateMiddleware',
 ]
 
 # 'lmapp' is an optional, privately maintained permission-gate middleware.
