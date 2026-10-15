@@ -11,8 +11,8 @@
 <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="/static/bower_components/Font-Awesome/css/all.min.css">
 <link rel="stylesheet" type="text/css" href="/static/bower_components/jquery-ui/themes/base/jquery-ui.css">
-<script src="/static/bower_components/jquery-ui/jquery-ui.js"></script>
-<script src="/static/bower_components/jquery-form/src/jquery.form.js"></script>
+<script defer src="/static/bower_components/jquery-ui/jquery-ui.js"></script>
+<script defer src="/static/bower_components/jquery-form/src/jquery.form.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
 
 <!-- Global site tag (gtag.js) - Google Analytics 
@@ -94,18 +94,18 @@
 
 <link href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-<script src="/static/popper.min.js" ></script>
+<script defer src="/static/popper.min.js" ></script>
 
-<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script defer src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     
-<script src="/static/geoui/utils.js"></script>
-<script src="/static/geoui/cookies.js"></script>
+<script defer src="/static/geoui/utils.js"></script>
+<script defer src="/static/geoui/cookies.js"></script>
 <link   href="/static/geoui/dragdrop.css" rel="stylesheet" />
-<script src ="/static/geoui/dragdrop.js"></script>
-<script src ="/static/geoui/callws.js"></script>
-<script src ="/static/geoui/callws_async.js"></script>
+<script defer src ="/static/geoui/dragdrop.js"></script>
+<script defer src ="/static/geoui/callws.js"></script>
+<script defer src ="/static/geoui/callws_async.js"></script>
 <link rel="stylesheet" href="/static/css/jquery.rateyo.min.css"/>
-<script src="/static/js/jquery.rateyo.min.js"></script>
+<script defer src="/static/js/jquery.rateyo.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/styles1.css">
 
 <style>
@@ -115,11 +115,11 @@
 }
 .fcontainer .header{
     flex: 0 1 auto;
-    bbackground: #7e8aa0;
+    background: #7e8aa0;
 }
 .fcontainer .content{
     flex: 1 1 auto;
-    bbackground: #dbdfe7;
+    background: #dbdfe7;
     overflow: auto;
 }
 .fcontainer .footer{
@@ -406,11 +406,86 @@ code::after, code::before {
     transform: scale(1);
   }
 }
+
+/* ---- Global top navbar ---- */
+.site-navbar {
+    background: #fff;
+    border-bottom: 1px solid #eef0f3;
+    box-shadow: 0 1px 3px rgba(17, 24, 39, 0.04);
+    padding: 8px 24px;
+    min-height: 56px;
+}
+.site-navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 24px;
+}
+.site-navbar-brand img {
+    height: 28px;
+    width: auto;
+}
+.site-navbar-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--auth-primary, #4f46e5);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    flex: none;
+}
+.site-navbar-brandname {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1f2937;
+    letter-spacing: -0.01em;
+}
+.site-navbar-links .nav-link,
+.site-navbar-actions .nav-link {
+    color: #4b5563 !important;
+    font-weight: 500;
+    padding: 8px 14px !important;
+    border-radius: 6px;
+    transition: color .15s ease, background-color .15s ease;
+}
+.site-navbar-links .nav-link:hover,
+.site-navbar-actions .nav-link:hover {
+    color: var(--auth-primary, #4f46e5) !important;
+    background-color: var(--auth-bg-from, #eef2ff);
+}
+.site-navbar-actions {
+    align-items: center;
+}
+.site-navbar .navbar-toggler {
+    border-color: #e5e7eb;
+    padding: 4px 8px;
+}
+.site-navbar .dropdown-menu {
+    border: 1px solid #eef0f3;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(17, 24, 39, 0.1);
+    padding: 6px;
+    margin-top: 10px;
+}
+.site-navbar .dropdown-item {
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+.site-navbar .dropdown-item:hover {
+    background-color: var(--auth-bg-from, #eef2ff);
+    color: var(--auth-primary-dark, #4338ca);
+}
 </style>
 
+{% block extra_head %}{% endblock %}
 </head>
-<body>
-<header >
+<body style="overflow: hidden;">
+<header>
 <script>
     function GET_POSTDATA(params){
         data = {
@@ -429,39 +504,43 @@ code::after, code::before {
     }
     
 </script>
-
-<body style="overflow: hidden;">
-<header>
 <!----------------------------------------BEGIN MENU end header -->
 
 {% if entire_top_url %}
     {% include entire_top_url %}    
 {% else %}
-    <nav id=mainnavbar class="navbar navbar-expand-sm "
-    style="border-bottom: 1px solid #eee; height: 48px;display: -webkit-box1">
+    <nav id="mainnavbar" class="site-navbar navbar navbar-expand-sm">
     {% if top_url %}
         {% include top_url %}    
     {% else %}
-        <a class="navbar-brand" href="/">
-            <img src="/static/imgs/logo5.png" height=28 alt="logo"/ >
+        <a class="navbar-brand site-navbar-brand" href="/">
+            <img src="/static/imgs/logo5.png" height="28" alt="logo">
             {% if appname %}
-                <span class="our_menu" style="font-weight: 600; font-size: small;"> {{ appname }} </span>
+                <span class="site-navbar-brandname">{{ appname }}</span>
             {% else %}
-                <span class="our_menu" style="font-weight: 600; font-size: small;"> EXAMPLE-1 </span>
+                <span class="site-navbar-brandname">EXAMPLE-1</span>
             {% endif %}
-    
-        <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+        </a>
 
-        <li class="nav-item mr-4 mb-2 mb-lg-0"><a class="nav-link" href=# style="font-weight: bold;"> 
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#mainnavbarCollapse" aria-controls="mainnavbarCollapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <li class="nav-item mr-4 mb-2 mb-lg-0"><a class="nav-link" href="/about.html" > 
-        <span class="our_menu">About</span></a></li>
-    <span id="common_status" class="" style="width: 50px; text-align:right; display: hidden; white-space: nowrap; overflow: visible;"></span>
+        <div class="collapse navbar-collapse" id="mainnavbarCollapse">
+        <ul class="navbar-nav site-navbar-links ml-auto mt-2 mt-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" href="/about.html">About</a>
+            </li>
+        </ul>
+        </div>
+        <span id="common_status" style="width: 50px; text-align:right; white-space: nowrap; overflow: visible;"></span>
     {% endif %}
-        
+
     <!--- APPLICATION MENU STARTS HERE ..... -->
+    <ul class="navbar-nav site-navbar-actions mr-auto">
     {% if APP_MENU %}
-    <ul class="navbar-nav  mr-auto">
         <li class="nav-item dropdown">
         <a class="nav-item nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" >
         <i class="fas fa-network-wired"></i> <span class="our_menu">Apps</span></a>
@@ -478,19 +557,12 @@ code::after, code::before {
         </div>
         </div>
         </li>
-    </ul>
-    {% else %}
     {% endif %}
-
     <!--- APPLICATION MENU ENDS HRE ..... -->
     {% include "user_profile_ext.html" %}
-
     </ul>
     </nav>
 {% endif %}
-
-
-
 
 </header>
 <style>

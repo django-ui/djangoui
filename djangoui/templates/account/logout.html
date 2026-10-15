@@ -1,25 +1,19 @@
-{% extends "common.html" %}
+{% extends "account/auth_base.html" %}
 {% load i18n %}
 {% block head_title %}{% trans "Sign Out" %}{% endblock %}
-{% block content %}
-<div class="container-fluid">
 
-<form class="container-fluid text-center" id="logout_form" method="post" action="{% url 'account_logout' %}">
-<br/><br/><br/><br/><h3 class="h3" id="head_banner">{% trans "Sign Out" %}</h3>
-<p class="confirm_logout_info">{% trans 'Are you sure you want to sign out?' %}</p>
+{% block auth_content %}
+<h1 class="auth-title">{% trans "Sign out" %}</h1>
+<p class="auth-subtitle">{% trans 'Are you sure you want to sign out?' %}</p>
 
+<form method="post" action="{% url 'account_logout' %}">
   {% csrf_token %}
-
   {% if redirect_field_value %}
-
-  	<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-
+    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
   {% endif %}
-  
-  <button  class="btn btn-success" type="submit">{% trans 'Sign Out' %}</button>
-  <a class="btn btn-danger" id="custom_logout_no" href="/">{% trans 'No' %}</a>
+  <button class="auth-submit" type="submit">{% trans 'Sign Out' %}</button>
 </form>
-
+<div class="auth-links">
+  <a href="/">{% trans 'Cancel' %}</a>
 </div>
-
 {% endblock %}

@@ -1,0 +1,30 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>{% block head_title %}{% endblock %} - {{ appname|default:"My App" }}</title>
+<link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/css/auth-theme.css">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card {% block card_class %}{% endblock %}">
+    <div class="auth-brand">
+      <div class="auth-logo">{{ appname|default:"A"|slice:":1" }}</div>
+      <div class="auth-brand-name">{{ appname|default:"My App" }}</div>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="auth-alert auth-alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    {% block auth_content %}{% endblock %}
+  </div>
+</div>
+</body>
+</html>

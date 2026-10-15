@@ -7,12 +7,11 @@
 {% autoescape off %}
 {% user_display user as user_display %}
 
-Site: {{ weburl  }}
+{% blocktrans with site_name=current_site.name %}
+Welcome, {{ user_display }}! Please confirm your email address to finish setting up your account on {{ site_name }}:
+{% endblocktrans %}
 
+{{ activate_url }}
 
-{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}
-You're receiving this e-mail because your email is used to register on  above site 
- {{ weburl  }}.
-You are assigned a username of: {{ user_display }} 
-
-{% endblocktrans %}{% endautoescape %}{% endblock %}
+{% blocktrans %}If you didn't request this, you can safely ignore this email.{% endblocktrans %}
+{% endautoescape %}{% endblock %}

@@ -26,6 +26,11 @@ def oidc_callback(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Must come before the allauth.urls include below: same name/pattern as
+    # allauth's own account_confirm_email, but tolerates a stale/reused/
+    # double-submitted confirmation key on POST instead of raising a raw
+    # 404 (see ConfirmEmailView in views.py).
+    re_path(r'^accounts/confirm-email/(?P<key>[-:\w]+)/$', views.ConfirmEmailView.as_view(), name='account_confirm_email'),
     path('accounts/', include('allauth.urls')),
     path('oidc/', include('mozilla_django_oidc.urls')),
     path('oidccb/', oidc_callback, name='oidc callback'),
@@ -46,6 +51,14 @@ urlpatterns = [
     
     
 ] + settings.DETECTED_URLS + [
+    # App registry is ready at this point (urls.py is only loaded once
+    # Django's apps.populate() has finished), so it's safe to build the
+    # include() objects for INCLUDE_APPS_WITH_URLS here -- unlike building
+    # them eagerly in settings.py, which would blow up for any app with a
+    # models.py (see settings.py comment next to INCLUDE_APPS_WITH_URLS).
+    path(f'{a}/', include(f'{a}.urls'), name=a)
+    for a in getattr(settings, 'INCLUDE_APPS_WITH_URLS', [])
+] + [
     path('oidc/', include('mozilla_django_oidc.urls')),
     re_path(r'^.*/$', catchAll, name='catchall'),
 ]

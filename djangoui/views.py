@@ -116,15 +116,18 @@ class MyResetPasswordForm(ResetPasswordForm):
                 "account_reset_password_from_key",
                 kwargs=dict(uidb36=user_pk_to_url_str(user), key=temp_key),
             )
+            # build_absolute_uri() uses django.contrib.sites' current Site
+            # (kept in sync with SITE_DOMAIN/SITE_PROTOCOL by settings.py)
+            # to build the link, so it always points at wherever this app is
+            # actually deployed. NEVER trust a client-supplied domain here --
+            # doing so would let an attacker redirect password reset links to
+            # a site they control.
             url = build_absolute_uri(request, path)
-            url1 = request.POST.get("DOMAIN") + path
-            #url1 = settings.DEFAULT_DOMAIN + path
 
             context = {
                 "current_site": current_site,
                 "user": user,
                 "password_reset_url": url,
-                "password_reset_url1": url1,
                 "request": request,
                 "domain": settings.DEFAULT_DOMAIN
             }
@@ -354,4 +357,25 @@ def postLogOff(sender, user, request, **kwargs):
     pass
 
 user_logged_in.connect(postLoggedIn)
+
+# ------------------------------------------------------------------------------
+# allauth's ConfirmEmailView.post() calls get_object() directly with no
+# Http404 handling (unlike its get(), which catches it and renders the
+# friendly "this link expired or is invalid" page). That means a
+# double-submitted confirm button, a reused/expired link, or an e-mail
+# already confirmed from an earlier click crashes with a raw 404 instead of
+# the normal account/email_confirm.html "invalid/expired" state. Subclass it
+# so POST behaves the same gracefully.
+from django.http import Http404
+from allauth.account.views import ConfirmEmailView as _AllauthConfirmEmailView
+
+
+class ConfirmEmailView(_AllauthConfirmEmailView):
+    def post(self, *args, **kwargs):
+        try:
+            return super().post(*args, **kwargs)
+        except Http404:
+            self.object = None
+            ctx = self.get_context_data()
+            return self.render_to_response(ctx)
 user_logged_in.disconnect(postLogOff)

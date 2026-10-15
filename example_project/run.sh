@@ -1,4 +1,5 @@
-PORT=8000
+PORT=${1:-8000}
+echo "Using port $PORT"
 python -m djangoui.manage migrate
 python -m djangoui.manage runserver 0:$PORT
 

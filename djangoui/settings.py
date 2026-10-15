@@ -23,16 +23,42 @@ THIS_BASE_DIR = Path(__file__).resolve(strict=True)  # Where settings.py is loca
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'pr75j7t*r!j=oac!798tazlecdo0%k0rasre@!f_&0u%2(=nty'
-DEFAULT_DOMAIN = "https://www.example.org"
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', 'pr75j7t*r!j=oac!798tazlecdo0%k0rasre@!f_&0u%2(=nty'
+)
 DEFAULT_APP = "mainapp"
 
-CSRF_TRUSTED_ORIGINS = ['http://*.127.0.0.1', 'http://*.127.0.0.1', 'http://*']
+# --------------------------------------------------------------------------------------
+# Domain / deployment configuration
+#
+# All of the following can be overridden with environment variables (or in
+# my_config.py) so that the exact same code works unmodified on localhost,
+# staging, or production. Nothing about the domain should be hardcoded here.
+#
+#   SITE_DOMAIN   - host[:port] this app is served from, e.g. "localhost:8000"
+#                   or "app.mycompany.com". Used for the django.contrib.sites
+#                   Site record, which allauth uses to build absolute links
+#                   (password reset, email confirmation, etc.) in emails.
+#   SITE_PROTOCOL - "http" or "https". Defaults to "https" unless the domain
+#                   looks like a local dev host.
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'localhost:8000')
+SITE_NAME = os.environ.get('SITE_NAME', 'My App')
+SITE_PROTOCOL = os.environ.get(
+    'SITE_PROTOCOL',
+    'http' if SITE_DOMAIN.split(':')[0] in ('localhost', '127.0.0.1') else 'https',
+)
+DEFAULT_DOMAIN = f"{SITE_PROTOCOL}://{SITE_DOMAIN}"
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS', f"{DEFAULT_DOMAIN}"
+).split(',')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
-ALLOWED_HOSTS = ['*', 'localhost']
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS', f"{SITE_DOMAIN.split(':')[0]},localhost,127.0.0.1"
+).split(',')
 
 LOGIN_REDIRECT_URL_FAILURE="/djangoui/not_authorized.html"
 
@@ -46,19 +72,29 @@ SOCIALACCOUNT_STORE_TOKENS=True
 # --------------------------------------------------------------------------------------
 AUTO_LOGOUT_DELAY=30000
 
-#ACCOUNT_AUTHENTICATION_METHOD="username_email"
-#ACCOUNT_LOGIN_METHODS
-#ACCOUNT_USERNAME_REQUIRED=False
-#ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
-#ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
-#ACCOUNT_EMAIL_REQUIRED = True
-#ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
-#ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT=86400000000
-#ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# Regular (non-SSO) username/password registration + login via django-allauth.
+# Users sign in with their e-mail address; username is still collected but
+# not required to log in.
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_ACTIVATION_DAYS = 7  # One-week activation window
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 7
+# "mandatory" requires users to click the e-mail link before they can log in.
+# Default to "optional" so the sample app is usable out of the box even
+# before SMTP is configured; flip to "mandatory" once real e-mail is set up.
+ACCOUNT_EMAIL_VERIFICATION = os.environ.get('ACCOUNT_EMAIL_VERIFICATION', 'optional')
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_USERNAME_MIN_LENGTH = 3
-ACCOUNT_EMAIL_SUBJECT_PREFIX="From: "
-ACCOUNT_DEFAULT_HTTP_PROTOCOL="https"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[My App] "
+# Protocol used to build absolute URLs (password reset / email confirmation
+# links) when no request is available. Driven by SITE_PROTOCOL above so it
+# automatically matches wherever this is deployed.
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = SITE_PROTOCOL
+ACCOUNT_RATE_LIMITS = {
+    # Relax the very strict allauth defaults so the sample app isn't
+    # accidentally locked out during local testing.
+    "login_failed": "10/m/ip,20/m/key",
+}
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
@@ -67,15 +103,20 @@ XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 def appcontext(request):
     from django.conf import settings as _settings
     context = {
-        "appname"           : "DEFAULT EXAMPLE",
-        "weburl"            : "https://Your URL/",
-        #"top_url"           : "",
-        #"entire_top_url"    : "app/topbar.html",      # If you want the entire top URL replaced
-        "NO_LOGIN_MENU"     : 1,                       # 1: to show login menu in topbar right corner
-        "APP_MENU"          : 0,                       # 1: show applications menu in top bar
+        "appname"           : getattr(_settings, "SITE_NAME", "DEFAULT EXAMPLE"),
+        "weburl"            : getattr(_settings, "DEFAULT_DOMAIN", "https://Your URL/"),
+        # Set TOP_URL / ENTIRE_TOP_URL in my_config.py (or settings) to swap
+        # in an app-specific top navbar template (e.g. "mainapp/topbar.html").
+        "top_url"           : getattr(_settings, "TOP_URL", ""),
+        "entire_top_url"    : getattr(_settings, "ENTIRE_TOP_URL", ""),
+        "NO_LOGIN_MENU"     : getattr(_settings, "NO_LOGIN_MENU", 1),  # 1: to show login menu in topbar right corner
+        "APP_MENU"          : getattr(_settings, "APP_MENU", 0),       # 1: show applications menu in top bar
         "SSO"               : 0,                       # 1: to show single signon during login
-        "DO_NOT_SHOW_LOGIN" : 1,                       # 1: do not allow users to enter username/passwd
-        "ALLOW_REGISTRATION": 0,                       # 1: allow users to register
+        # By default, show the regular username/password login form and
+        # allow self-service registration. Set DO_NOT_SHOW_LOGIN=1 only for
+        # SSO-only deployments.
+        "DO_NOT_SHOW_LOGIN" : 0,                       # 1: do not allow users to enter username/passwd
+        "ALLOW_REGISTRATION": 1,                       # 1: allow users to register
         # Optional impersonation widgets in templates render only when enabled.
         "IMPERSONATION_ENABLED": getattr(_settings, "IMPERSONATION_ENABLED", False),
     }
@@ -173,9 +214,14 @@ for l in LOGLEVELS.split(":"):
     gl.setLevel(v.upper())
 
 #------------------------------------------------------------------------------
+# NOTE: the optional OIDC/SSO backend ('djangoui.myoidc.MyOIDCAB') is added
+# further below, *after* my_config.py has been loaded, and only if OIDC is
+# actually configured (OIDC_OP_TOKEN_ENDPOINT set). Instantiating that
+# backend unconditionally breaks ordinary username/password login+signup for
+# any project that isn't using SSO, because mozilla_django_oidc raises
+# ImproperlyConfigured for the missing OIDC_* settings as soon as Django
+# calls get_backends() (e.g. on every login).
 AUTHENTICATION_BACKENDS = [
-    'djangoui.myoidc.MyOIDCAB',
-    
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
 
@@ -194,17 +240,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'geoapp.perm_middleware.PermissionGateMiddleware',
 ]
+
+# 'lmapp' is an optional, privately maintained permission-gate middleware.
+# Only wire it in when it's actually installed, otherwise the whole site
+# fails to boot (ImproperlyConfigured) for anyone who doesn't have it.
+import importlib.util as _importlib_util_mw
+if _importlib_util_mw.find_spec("lmapp") is not None:
+    MIDDLEWARE.append('lmapp.perm_middleware.PermissionGateMiddleware')
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-#    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-#    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
-#    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
-#    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
 # Internationalization
@@ -216,8 +268,19 @@ USE_I18N  = True
 USE_L10N  = True
 USE_TZ    = True
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# E-mail: use real SMTP only once it's configured via environment variables;
+# otherwise fall back to printing e-mails (password reset / confirmation
+# links) to the console so the sample app works out of the box.
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+if EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f'no-reply@{SITE_DOMAIN.split(":")[0]}')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_ALLOW_ALL = True   
 #------------------------------------------------------------------------------
@@ -262,6 +325,25 @@ WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 SITE_ID = 1
 
+# Keep the django.contrib.sites "Site" record (used by allauth to build
+# absolute links in password-reset / e-mail-confirmation messages) in sync
+# with SITE_DOMAIN/SITE_NAME above, so the links always point at wherever
+# this app is actually deployed instead of a stale "example.com" value.
+def _sync_site_domain(sender, **kwargs):
+    try:
+        from django.contrib.sites.models import Site
+        Site.objects.update_or_create(
+            pk=SITE_ID, defaults={"domain": SITE_DOMAIN, "name": SITE_NAME}
+        )
+    except Exception:
+        # Sites table may not exist yet (first migrate of django.contrib.sites
+        # itself); post_migrate for django.contrib.sites specifically will
+        # retry via the other post_migrate signal connection below.
+        pass
+
+from django.db.models.signals import post_migrate
+post_migrate.connect(_sync_site_domain)
+
 DETECT_INSTALLED_APPS = False
 DETECTED_APPS = []
 DETECTED_URLS = []
@@ -276,6 +358,22 @@ if (os.path.exists("my_config.py")):
 elif (os.path.exists(os.path.expanduser("~/.django/my_config.py"))):
     import my_config
     from my_config import *
+
+# my_config.py (just loaded above) may set EMAIL_HOST directly to enable
+# real SMTP without needing environment variables -- re-check here and flip
+# EMAIL_BACKEND to SMTP if so, since the EMAIL_HOST/EMAIL_BACKEND decision
+# above runs *before* my_config.py is loaded and would otherwise leave
+# EMAIL_BACKEND stuck on the console backend even with SMTP settings present.
+if EMAIL_HOST and EMAIL_BACKEND != 'django.core.mail.backends.smtp.EmailBackend':
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Only wire up the OIDC/SSO authentication backend once OIDC has actually
+# been configured (either via my_config.py or environment variables).
+# Otherwise regular username/password login and registration breaks for
+# every non-SSO deployment -- see note above AUTHENTICATION_BACKENDS.
+OIDC_OP_TOKEN_ENDPOINT = globals().get('OIDC_OP_TOKEN_ENDPOINT') or os.environ.get('OIDC_OP_TOKEN_ENDPOINT')
+if OIDC_OP_TOKEN_ENDPOINT and _importlib_util_mw.find_spec("djangoui.myoidc") is not None:
+    AUTHENTICATION_BACKENDS = ['djangoui.myoidc.MyOIDCAB'] + AUTHENTICATION_BACKENDS
 
 #---------------------------------------------------------------------------------
 TEMPLATES = [
@@ -372,15 +470,18 @@ if IMPERSONATION_ENABLED:
 else:
     logger.info("Impersonation disabled: 'djangoui.impersonate' app missing or no IMPERSONATION_ACCOUNTS configured.")
 
-# Include URLS (only for apps that expose a urls module)
-DETECTED_URLS = [
-    path(f'{a}/', include(f'{a}.urls'), name=a)
-    for a in INCLUDE_APPS
-    if _app_is_available(f'{a}.urls')
-]
+# NOTE: we intentionally do NOT build the url() / include() objects for
+# INCLUDE_APPS here. Calling include('somepp.urls') imports that app's
+# urls.py (and transitively its views.py/models.py) immediately, but the
+# Django app registry isn't populated yet while settings.py is still being
+# evaluated -- any app with a models.py would blow up with
+# AppRegistryNotReady. Instead we just remember *which* app names have a
+# urls module here, and djangoui/urls.py (loaded after the app registry is
+# ready) turns that into real url patterns.
+INCLUDE_APPS_WITH_URLS = [a for a in INCLUDE_APPS if _app_is_available(f'{a}.urls')]
 if (os.path.exists("mainapp") and 'mainapp' not in INSTALLED_APPS):
-    INSTALLED_APPS += ['mainapp'] 
-    DETECTED_URLS += [path(f'mainapp/', include(f'mainapp.urls'), name='mainapp') ]
+    INSTALLED_APPS += ['mainapp']
+    INCLUDE_APPS_WITH_URLS = INCLUDE_APPS_WITH_URLS + ['mainapp']
 
 
 
