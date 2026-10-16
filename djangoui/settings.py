@@ -60,6 +60,30 @@ ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS', f"{SITE_DOMAIN.split(':')[0]},localhost,127.0.0.1"
 ).split(',')
 
+# When running behind a reverse proxy (Apache/nginx) on a different public
+# domain/port than the one Django itself binds to, request.get_host() /
+# is_secure() (and anything built from them, e.g. allauth's e-mail
+# confirmation and password-reset links) would otherwise report the
+# internal address Django is bound to (e.g. "localhost:8003") instead of
+# the public URL the browser actually used. Trusting the standard
+# X-Forwarded-Host/-Proto headers fixes that automatically -- but only if
+# the proxy actually sets them (e.g. Apache's `ProxyPreserveHost On`, or
+# explicit `RequestHeader set X-Forwarded-Proto "https"`) and the app is
+# ONLY reachable through that trusted proxy (never from the internet
+# directly), since those headers would otherwise be spoofable. Disable via
+# USE_X_FORWARDED_HOST=False in my_config.py/env if that's not the case.
+USE_X_FORWARDED_HOST = os.environ.get('USE_X_FORWARDED_HOST', 'True') == 'True'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Snapshot of the values above, computed before my_config.py has had a
+# chance to run (see the re-derivation after my_config.py loads, below):
+# used to tell "my_config.py didn't touch this, it's still the auto-derived
+# default" apart from "my_config.py explicitly overrode this".
+_predefault_site_protocol = SITE_PROTOCOL
+_predefault_default_domain = DEFAULT_DOMAIN
+_predefault_csrf_trusted_origins = CSRF_TRUSTED_ORIGINS
+_predefault_allowed_hosts = ALLOWED_HOSTS
+
 LOGIN_REDIRECT_URL_FAILURE="/djangoui/not_authorized.html"
 
 # Authentication Settings
@@ -367,6 +391,31 @@ elif (os.path.exists(os.path.expanduser("~/.django/my_config.py"))):
 # EMAIL_BACKEND stuck on the console backend even with SMTP settings present.
 if EMAIL_HOST and EMAIL_BACKEND != 'django.core.mail.backends.smtp.EmailBackend':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Same ordering issue as EMAIL_HOST above, but for the domain settings: if
+# my_config.py sets SITE_DOMAIN directly (the documented, one-line way to
+# point a deployment at a real domain), ALLOWED_HOSTS/CSRF_TRUSTED_ORIGINS/
+# SITE_PROTOCOL/DEFAULT_DOMAIN were already computed from the *old*
+# SITE_DOMAIN before my_config.py had a chance to run, so they'd silently
+# keep pointing at "localhost" -- e.g. a real request to
+# https://www.example.com would 400 with DisallowedHost even though
+# my_config.py "set the domain". Re-derive anything that's still equal to
+# its pre-my_config.py default; leave anything my_config.py overrode
+# directly (ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, etc.) untouched.
+if SITE_DOMAIN != os.environ.get('SITE_DOMAIN', 'localhost:8000'):
+    if SITE_PROTOCOL == _predefault_site_protocol:
+        SITE_PROTOCOL = os.environ.get(
+            'SITE_PROTOCOL',
+            'http' if SITE_DOMAIN.split(':')[0] in ('localhost', '127.0.0.1') else 'https',
+        )
+    if DEFAULT_DOMAIN == _predefault_default_domain:
+        DEFAULT_DOMAIN = f"{SITE_PROTOCOL}://{SITE_DOMAIN}"
+    if CSRF_TRUSTED_ORIGINS == _predefault_csrf_trusted_origins:
+        CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', DEFAULT_DOMAIN).split(',')
+    if ALLOWED_HOSTS == _predefault_allowed_hosts:
+        ALLOWED_HOSTS = os.environ.get(
+            'ALLOWED_HOSTS', f"{SITE_DOMAIN.split(':')[0]},localhost,127.0.0.1"
+        ).split(',')
 
 # Only wire up the OIDC/SSO authentication backend once OIDC has actually
 # been configured (either via my_config.py or environment variables).
