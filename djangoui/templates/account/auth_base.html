@@ -26,5 +26,14 @@
     {% block auth_content %}{% endblock %}
   </div>
 </div>
+<script>
+function toggleAuthPassword(btn) {
+  var input = btn.parentElement.querySelector('input');
+  if (!input) return;
+  var showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '{% trans "Show" %}' : '{% trans "Hide" %}';
+}
+</script>
 </body>
 </html>

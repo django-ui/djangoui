@@ -31,6 +31,8 @@ urlpatterns = [
     # double-submitted confirmation key on POST instead of raising a raw
     # 404 (see ConfirmEmailView in views.py).
     re_path(r'^accounts/confirm-email/(?P<key>[-:\w]+)/$', views.ConfirmEmailView.as_view(), name='account_confirm_email'),
+    # allauth itself has no "delete your account" flow built in.
+    path('accounts/delete/', views.AccountDeleteView.as_view(), name='account_delete'),
     path('accounts/', include('allauth.urls')),
     path('oidc/', include('mozilla_django_oidc.urls')),
     path('oidccb/', oidc_callback, name='oidc callback'),

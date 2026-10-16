@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 import djangoui, djangoui.utils, logging
 from mangorest import mango
@@ -379,3 +379,34 @@ class ConfirmEmailView(_AllauthConfirmEmailView):
             ctx = self.get_context_data()
             return self.render_to_response(ctx)
 user_logged_in.disconnect(postLogOff)
+
+# ------------------------------------------------------------------------------
+# Let users delete their own account. allauth doesn't provide this out of
+# the box -- requires re-entering the current password (same security bar
+# as changing it) so this can't be triggered by e.g. a stray click or CSRF
+# from an unlocked/left-open session.
+from django.contrib import messages
+from django.contrib.auth import logout as _auth_logout
+from django.views.generic import View
+
+
+class AccountDeleteView(View):
+    template_name = "account/account_delete.html"
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('account_login')}?next={request.path}")
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('account_login')}?next={request.path}")
+        user = request.user
+        if not user.check_password(request.POST.get('password', '')):
+            return render(request, self.template_name, {
+                'error': "That password doesn't match. Your account was not deleted.",
+            })
+        _auth_logout(request)
+        user.delete()
+        messages.success(request, "Your account and all associated data have been deleted.")
+        return redirect('index')

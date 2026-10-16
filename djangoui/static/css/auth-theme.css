@@ -104,6 +104,34 @@
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 
+.auth-password-wrap {
+  position: relative;
+}
+
+.auth-password-wrap input {
+  padding-right: 64px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--auth-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.auth-password-toggle:hover {
+  color: var(--auth-primary);
+  background: var(--auth-bg-from);
+}
+
 .auth-field input:focus,
 .auth-field select:focus {
   outline: none;
@@ -142,6 +170,15 @@
 
 .auth-submit:hover {
   background: var(--auth-primary-dark);
+}
+
+.auth-submit-danger {
+  background: var(--auth-danger);
+  margin-bottom: 12px;
+}
+
+.auth-submit-danger:hover {
+  background: #b91c1c;
 }
 
 .auth-links {

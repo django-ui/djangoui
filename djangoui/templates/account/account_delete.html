@@ -1,0 +1,30 @@
+{% extends "account/auth_base.html" %}
+{% load i18n %}
+{% block head_title %}{% trans "Delete your account" %}{% endblock %}
+
+{% block auth_content %}
+<h1 class="auth-title">{% trans "Delete your account" %}</h1>
+<p class="auth-subtitle">
+  {% blocktrans %}This permanently deletes your account, enrollments, and subscription. This can't be undone.{% endblocktrans %}
+</p>
+
+{% if error %}
+  <div class="auth-alert auth-alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="{% url 'account_delete' %}" novalidate>
+  {% csrf_token %}
+  <div class="auth-field">
+    <label for="id_password">{% trans "Confirm your password" %}</label>
+    <div class="auth-password-wrap">
+      <input type="password" name="password" id="id_password" required autofocus>
+      <button type="button" class="auth-password-toggle" onclick="toggleAuthPassword(this)">{% trans "Show" %}</button>
+    </div>
+  </div>
+  <button class="auth-submit auth-submit-danger" type="submit">{% trans "Permanently delete my account" %}</button>
+</form>
+
+<div class="auth-links">
+  <a href="/">{% trans "Cancel, take me back" %}</a>
+</div>
+{% endblock %}

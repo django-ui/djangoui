@@ -1,12 +1,19 @@
 {% load custom_tags %}
+{% load i18n %}
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta http-equiv="x-ua-compatible" content="ie=edge">
 <script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
 <link rel="icon" type="image/png" href="/static/imgs/fav.png" />
-<link href='/static/css/googlefont.css' rel='stylesheet' type='text/css'>
-<link href='/static/css/googlefontsans.css' rel='stylesheet' type='text/css'>
+<!-- googlefont.css / googlefontsans.css removed: they only supply @font-face
+     declarations for 'Roboto'/'Google Sans' pointing at fonts.gstatic.com.
+     Every actual usage already falls back to a generic sans-serif/serif
+     font, so this bought nothing visually but added ~90 background font
+     fetch attempts to an external host per page load -- very slow on
+     networks where that host is unreachable/slow (confirmed earlier in
+     this environment). The OS default UI font (San Francisco/Segoe UI/
+     Roboto on Android) is used instead now, with no network request. -->
 <link rel="stylesheet" type="text/css" href="/static/css/geoui.css">
 <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="/static/bower_components/Font-Awesome/css/all.min.css">
@@ -480,6 +487,20 @@ code::after, code::before {
     background-color: var(--auth-bg-from, #eef2ff);
     color: var(--auth-primary-dark, #4338ca);
 }
+.email-verify-banner {
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 10px 16px;
+}
+.email-verify-banner a {
+    color: #92400e;
+    font-weight: 600;
+    text-decoration: underline;
+    margin-left: 6px;
+}
 </style>
 
 {% block extra_head %}{% endblock %}
@@ -575,6 +596,12 @@ code::after, code::before {
 }
 </style>
 <!-- End Header ------------------------------------------END MENU end header -->
+{% if email_unverified %}
+<div class="email-verify-banner">
+  {% blocktrans %}Please confirm your email address to get full access to your account.{% endblocktrans %}
+  <a href="/accounts/email/">{% blocktrans %}Resend confirmation email{% endblocktrans %}</a>
+</div>
+{% endif %}
 <div class="pagecontent" >
 {% block messages %}{% endblock %}
 {% block content %}{% endblock %}

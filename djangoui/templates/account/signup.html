@@ -10,12 +10,7 @@
 <form method="POST" action="{% url 'account_signup' %}" id="signup_form" novalidate>
   {% csrf_token %}
   {% for field in form %}
-    <div class="auth-field">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {{ field.errors }}
-      {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-    </div>
+    {% include "account/snippets/auth_field.html" %}
   {% endfor %}
 
   {% if redirect_field_value %}

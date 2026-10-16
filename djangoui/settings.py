@@ -143,9 +143,23 @@ def appcontext(request):
         "ALLOW_REGISTRATION": 1,                       # 1: allow users to register
         # Optional impersonation widgets in templates render only when enabled.
         "IMPERSONATION_ENABLED": getattr(_settings, "IMPERSONATION_ENABLED", False),
+        # True when logged in with ACCOUNT_EMAIL_VERIFICATION="optional" and
+        # no verified e-mail address yet -- lets templates show a reminder
+        # banner instead of blocking access outright (see common.html).
+        "email_unverified": _email_unverified(request),
     }
 
     return context
+
+
+def _email_unverified(request):
+    if not request.user.is_authenticated:
+        return False
+    try:
+        from allauth.account.models import EmailAddress
+        return not EmailAddress.objects.filter(user=request.user, verified=True).exists()
+    except Exception:
+        return False
 
 # --------------------------------------------------------------------------------------
 # Disable Django's logging setup

@@ -39,6 +39,10 @@ Suppressed entirely when NO_LOGIN_MENU is set.
                     <a class="dropdown-item" href="{% url 'account_logout' %}">
                         <i class="fas fa-sign-out-alt"></i>&nbsp;Sign Out
                     </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'account_delete' %}" style="color: #dc2626;">
+                        <i class="fas fa-trash-alt"></i>&nbsp;Delete account
+                    </a>
                 </div>
             </li>
         </ul>

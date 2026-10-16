@@ -1,0 +1,14 @@
+{% load i18n %}
+<div class="auth-field">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {% if field.field.widget.input_type == "password" %}
+    <div class="auth-password-wrap">
+      {{ field }}
+      <button type="button" class="auth-password-toggle" onclick="toggleAuthPassword(this)">{% trans "Show" %}</button>
+    </div>
+  {% else %}
+    {{ field }}
+  {% endif %}
+  {{ field.errors }}
+  {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+</div>
