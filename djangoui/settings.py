@@ -57,7 +57,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 ALLOWED_HOSTS = os.environ.get(
-    'ALLOWED_HOSTS', f"{SITE_DOMAIN.split(':')[0]},localhost,127.0.0.1"
+    'ALLOWED_HOSTS', f"{SITE_DOMAIN.split(':')[0]},localhost,127.0.0.1,*"
 ).split(',')
 
 # When running behind a reverse proxy (Apache/nginx) on a different public
