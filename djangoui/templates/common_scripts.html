@@ -1,0 +1,150 @@
+{% load custom_tags %}{% load i18n %}{% comment %}
+Shared by common.html and common.vertical.html: global helper scripts (salert, class-based init, websockets, datatables).
+{% endcomment %}
+<script>
+var STOP_ALERTS= 0
+function salert(txt, cls=null, delay=2000){
+    if( STOP_ALERTS)
+        return;
+
+    icon="fa fa-check"
+    iconhead = "";
+    if ( !cls) {
+        cls = "btn-success"
+        icon="fa fa-check"
+        iconhead="Success"
+    } else if ( cls == "btn-success") {
+        icon="fa fa-check"
+        iconhead="Success"
+    } else if (cls == "btn-warning") {
+        icon = "fa fa-exclamation-triangle"
+        iconhead="Warning"
+    } else if (cls == "btn-info"){
+        icon = "fa fa-info"
+        iconhead="Info"
+    } else if (cls == "btn-danger"){
+        icon = "fa fa-exclamation-triangle"
+        iconhead="Error: ~"
+    }
+
+    txt = `<h4 class="alert-heading"><i class="${icon}"></i> ${iconhead}</h4>${txt}`
+
+    $('#1').css('z-index', 4);
+
+    $('#1').data('delay', delay );
+    $('.toast').toast('show');
+    cls = cls || "btn-success"
+    $('#toastid').html(txt).attr('class', cls)
+    $('.toast').toast('show');
+}
+
+var spin = "<i class='fa fa-spinner fa-spin' style='font-size: 32px;color:red;'></i>"
+
+function JS_error_OLD(responseTxt, statusTxt, xhr, showAlert=1, errorCB=null){
+    showAlert = showAlert | true;
+    if(statusTxt && responseTxt && (statusTxt !== "success" ||
+        responseTxt.toLowerCase().startsWith("error") || responseTxt === "null" ) ){
+
+        salert("<i class='fas fa-skull-crossbones'></i>" + statusTxt + " : " + responseTxt, 'btn-danger');
+        if(errorCB){
+            errorCB(url, responseTxt, statusTxt)
+        } else{
+            var rs = responseTxt || "";
+            console.log(statusTxt, rs.substring(0,64))
+        }
+        return statusTxt
+    } else if( responseTxt.startsWith("WARN") ) {
+        salert("<i class='fas fas fa-exclamation'></i> : " + responseTxt, 'btn-warning');
+    }
+
+    if(statusTxt && responseTxt && (statusTxt !== "success" || responseTxt.startsWith("ERROR:")) ){
+
+        salert("<i class='fas fa-skull-crossbones'></i>" + statusTxt + " : " + responseTxt, 'btn-danger');
+        if(errorCB){
+            errorCB(url, responseTxt, statusTxt)
+        } else{
+            var rs = responseTxt || "";
+            console.log(statusTxt, rs.substring(0,64))
+        }
+        return statusTxt
+    } else if( responseTxt.startsWith("WARN") ) {
+        salert("<i class='fas fas fa-exclamation'></i> : " + responseTxt, 'btn-warning');
+    }
+    return 0;
+}
+
+function JS_error(responseTxt, statusTxt, xhr, showAlert=1, errorCB=null){
+
+    robject = null
+    if (typeof(responseTxt) == "object" ) {
+        robject = responseTxt
+        responseTxt = responseTxt.statusText || responseTxt.toString()
+        responseTxt = responseTxt.responseText || responseTxt.toString()
+    }
+
+    if( (statusTxt && statusTxt !== "success") ||
+        (responseTxt && responseTxt.toLowerCase().startsWith("error")) ||
+        ( responseTxt === "null" ) ){
+
+        salert("<i class='fas fa-skull-crossbones'></i>" + statusTxt + " : " + responseTxt, 'btn-danger');
+        var rs = responseTxt || "";
+        console.log(statusTxt, rs.substring(0,64))
+
+        return statusTxt
+    } else if( responseTxt.startsWith("WARN") ) {
+        salert("<i class='fas fas fa-exclamation'></i> : " + responseTxt, 'btn-warning');
+    }
+
+    return 0;
+}
+
+var spin = "<i class='fa fa-spinner fa-spin' style='font-size: 32px;color:red;'></i>"
+let BUSY_COUNT = 0
+function busy(msg)  { $('#common_status').html(spin + (msg||'')); BUSY_COUNT++}
+function nbusy(msg) { if (--BUSY_COUNT <= 0 ) {$('#common_status').html(''); BUSY_COUNT=0 } }
+
+function doClassbasedInit() {
+    var x = document.getElementsByClassName("tabs");
+    for (var i = 0; i < x.length; i++) {
+        $(x[i]).tabs()
+        //$( x[i] ).tabs( "option", "heightStyle", "fill" );
+    }
+    x = document.getElementsByClassName("draggable");
+    for (var i = 0; i < x.length; i++) {
+        $(x[i]).draggable()
+    }
+    x = document.getElementsByClassName("resizable");
+    for (var i = 0; i < x.length; i++) {
+        $(x[i]).resizable()
+    }
+    x = document.getElementsByClassName("resizableX");
+    for (var i = 0; i < x.length; i++) {
+        $(x[i]).resizable( {handles: 'e, w'} )
+    }
+    x = document.getElementsByClassName("resizableY");
+    for (var i = 0; i < x.length; i++) {
+        $(x[i]).resizable( {handles: 'n, s'} )
+    }
+
+    $('[data-toggle="popover"]').popover({ html: true });
+    $('[data-toggle="tooltip"]').tooltip()
+}
+
+function btnBlur() { 
+    $('.btn').click(function(){ this.blur()  });
+}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+$(document).ready(function() {
+    doClassbasedInit()
+})
+</script>
+
+<!-- 
+For web sockets include the following file
+-->   
+{% include "websock.html" %} 
+
+<link href="/static/geoui/jquery-tabs.css" rel="stylesheet" />
+{% include "datatable.html" %}
+

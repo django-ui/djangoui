@@ -133,6 +133,9 @@ def appcontext(request):
         # in an app-specific top navbar template (e.g. "mainapp/topbar.html").
         "top_url"           : getattr(_settings, "TOP_URL", ""),
         "entire_top_url"    : getattr(_settings, "ENTIRE_TOP_URL", ""),
+        # Sidebar template for the vertical layout (common.vertical.html).
+        "sidebar_url"       : getattr(_settings, "SIDEBAR_URL", ""),
+        "footer_url"        : getattr(_settings, "FOOTER_URL", ""),
         "NO_LOGIN_MENU"     : getattr(_settings, "NO_LOGIN_MENU", 1),  # 1: to show login menu in topbar right corner
         "APP_MENU"          : getattr(_settings, "APP_MENU", 0),       # 1: show applications menu in top bar
         "SSO"               : 0,                       # 1: to show single signon during login

@@ -1,0 +1,95 @@
+{% load custom_tags %}
+{% load i18n %}
+{% comment %}
+Vertical-layout base: a fixed sidebar on the side and a main panel, with no
+top navbar. It provides the same blocks as common.html (extra_head, messages,
+content, content_extra, extra_body) and the same global assets and helpers
+(common_head / common_overlays / common_scripts), so pages written for
+common.html work unchanged.
+
+To use it, set SIDEBAR_URL to the sidebar template, then either extend
+"common.vertical.html" directly or add a project-level templates/common.html
+containing only {% templatetag openblock %} extends "common.vertical.html" {% templatetag closeblock %}.
+
+Footer: FOOTER_URL (optional) is included at the bottom of the main panel's
+scrolling content; it is pushed to the bottom of the screen when the page is
+shorter than the viewport. Page blocks render inside .dj-content. Full-height pages can drop it with an empty
+{% templatetag openblock %} block footer {% templatetag closeblock %}{% templatetag openblock %} endblock {% templatetag closeblock %}.
+
+Sidebar contract: the sidebar template is position:fixed, and it sets
+--dj-sidebar-w on <html> to the width it occupies. The main panel offsets
+itself by that much (0 when there is no sidebar).
+{% endcomment %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+{% include "common_head.html" %}
+<style>
+html, body { height: 100%; }
+body.dj-vertical { margin: 0; overflow: hidden; }
+.dj-main {
+    height: 100vh;
+    margin-left: var(--dj-sidebar-w, 0px);
+    display: flex;
+    flex-direction: column;
+    transition: margin 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+.dj-main > .email-verify-banner { flex: none; }
+.dj-main > .pagecontent {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    overflow: auto;
+    /* column so the footer sits at the bottom of the screen on short pages
+       and after the content on long ones */
+    display: flex;
+    flex-direction: column;
+}
+.dj-main > .pagecontent > .dj-content { flex: 1 0 auto; position: relative; }
+.dj-main > .pagecontent > :not(.dj-content) { flex-shrink: 0; }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="dj-vertical">
+<script>
+    function GET_POSTDATA(params){
+        data = {
+                csrfmiddlewaretoken: '{{csrf_token }}',
+                auth: '{{request.session.session_key}}',
+                user:'{{user.username}}'
+        }
+        for(var k in params) {
+            data[k] = params[k]
+        }
+        return data
+    }
+    function POST(url,  data, callback){
+        data1 = GET_POSTDATA(data)
+        $.post(url, data1, callback).fail(callback);
+    }
+</script>
+
+{% if sidebar_url %}{% include sidebar_url %}{% endif %}
+
+<main class="dj-main" id="main">
+    {% if email_unverified %}
+    <div class="email-verify-banner">
+      {% blocktrans %}Please confirm your email address to get full access to your account.{% endblocktrans %}
+      <a href="/accounts/email/">{% blocktrans %}Resend confirmation email{% endblocktrans %}</a>
+    </div>
+    {% endif %}
+    <div class="pagecontent">
+    <div class="dj-content">
+    {% block messages %}{% endblock %}
+    {% block content %}{% endblock %}
+    {% block content_extra %}{% endblock %}
+    {% block extra_body %}{% endblock %}
+    </div>
+    {% block footer %}{% if footer_url %}{% include footer_url %}{% endif %}{% endblock %}
+    </div>
+</main>
+
+{% include "common_overlays.html" %}
+{% include "common_scripts.html" %}
+</body>
+</html>
