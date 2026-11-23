@@ -124,7 +124,14 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
 
-def appcontext(request):
+def base_appcontext(request):
+    """djangoui's template context. A project can replace it by defining appcontext() in my_config.py
+    (loaded below with `from my_config import *`); to change only a few keys, build on this one:
+
+        def appcontext(request):
+            from djangoui.settings import base_appcontext
+            return {**base_appcontext(request), "SSO": 1, "DO_NOT_SHOW_LOGIN": 1}
+    """
     from django.conf import settings as _settings
     context = {
         "appname"           : getattr(_settings, "SITE_NAME", "DEFAULT EXAMPLE"),
@@ -153,6 +160,10 @@ def appcontext(request):
     }
 
     return context
+
+
+# The context processor (TEMPLATES below). my_config.py may rebind this name; base_appcontext stays.
+appcontext = base_appcontext
 
 
 def _email_unverified(request):
